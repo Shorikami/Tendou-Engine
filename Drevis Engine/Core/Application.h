@@ -16,6 +16,9 @@
 
 namespace Drevis
 {
+	static constexpr int WIDTH = 1280;
+	static constexpr int HEIGHT = 720;
+
 	class Application
 	{
 	public:
@@ -42,6 +45,7 @@ namespace Drevis
 		// before the device
 		std::unique_ptr<DescriptorPool> globalPool{};
 		GameObject::Map gameObjects;
+		Camera c;
 	};
 }
 

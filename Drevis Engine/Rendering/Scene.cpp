@@ -1,6 +1,9 @@
 #include "Scene.h"
 #include "../Core/Application.h"
 
+#include "../IO/Mouse.h"
+#include "../IO/Keyboard.h"
+
 #include <stdexcept>
 #include <array>
 #include <cassert>
@@ -132,20 +135,30 @@ namespace Drevis
 
 	void Scene::ProcessInput(float dt, Camera& c)
 	{
-		GLFWwindow* win = appWindow.GetGLFWwindow();
-
-		if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS)
+		if (Keyboard::Key(GLFW_KEY_W))
 			c.UpdateCameraPos(CameraDirection::FORWARD, dt);
-		if (glfwGetKey(win, GLFW_KEY_S) == GLFW_PRESS)
+		if (Keyboard::Key(GLFW_KEY_S))
 			c.UpdateCameraPos(CameraDirection::BACKWARDS, dt);
-		if (glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS)
+		if (Keyboard::Key(GLFW_KEY_A))
 			c.UpdateCameraPos(CameraDirection::LEFT, dt);
-		if (glfwGetKey(win, GLFW_KEY_D) == GLFW_PRESS)
+		if (Keyboard::Key(GLFW_KEY_D))
 			c.UpdateCameraPos(CameraDirection::RIGHT, dt);
-		if (glfwGetKey(win, GLFW_KEY_Q) == GLFW_PRESS)
+		if (Keyboard::Key(GLFW_KEY_Q))
 			c.UpdateCameraPos(CameraDirection::UP, dt);
-		if (glfwGetKey(win, GLFW_KEY_E) == GLFW_PRESS)
+		if (Keyboard::Key(GLFW_KEY_E))
 			c.UpdateCameraPos(CameraDirection::DOWN, dt);
+
+		double dx = Mouse::GetDX(); double dy = Mouse::GetDY();
+		if (dx != 0 || dy != 0)
+		{
+			float sens = 1.f;
+			c.UpdateCameraDir(dx * sens, dy * sens);
+		}
+
+		if (Keyboard::KeyDown(GLFW_KEY_GRAVE_ACCENT))
+		{
+			c.rotateCamera = !c.rotateCamera;
+		}
 	}
 
 	void Scene::ProcessMouse(float x, float y, Camera& c)

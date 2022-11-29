@@ -23,7 +23,7 @@ namespace Drevis
 
 	void Camera::UpdateCameraDir(double dx, double dy)
 	{
-		if (rotateCamera)
+		if (!rotateCamera)
 		{
 			yaw += static_cast<float>(dx);
 			pitch -= static_cast<float>(dy);

@@ -1,5 +1,8 @@
 #include "Window.h"
-#include "Globals.h"
+
+#include "../IO/Mouse.h"
+#include "../IO/Keyboard.h"
+
 
 #include <stdexcept>
 
@@ -29,6 +32,9 @@ namespace Drevis
 		window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
 
 		glfwSetWindowUserPointer(window, this);
+
+		glfwSetKeyCallback(window, Keyboard::KeyCallback);
+		glfwSetCursorPosCallback(window, Mouse::CursorPosCallback);
 		glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 	}
 
@@ -46,7 +52,5 @@ namespace Drevis
 		wWindow->frameBufferResized = true;
 		wWindow->width = w;
 		wWindow->height = h;
-		c.currW = w;
-		c.currH = h;
 	}
 }

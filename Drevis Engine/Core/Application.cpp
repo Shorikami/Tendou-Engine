@@ -8,6 +8,7 @@
 #include "../Rendering/RenderSystem.h"
 #include "../Rendering/Buffer.h"
 
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -41,7 +42,6 @@ namespace Drevis
 			.Build();
 
 		LoadGameObjects();
-		glfwSetCursorPosCallback(appWindow.GetGLFWwindow(), MouseCallback);
 	}
 
 	Application::~Application()
@@ -312,21 +312,21 @@ namespace Drevis
 		//gameObjects.emplace(flatVase.GetID(), std::move(flatVase));
 ;	}
 
-	void MouseCallback(GLFWwindow* win, double x, double y)
-	{
-		if (firstMouse)
-		{
-			lastX = static_cast<float>(x);
-			lastY = static_cast<float>(y);
-			firstMouse = false;
-		}
-
-		float xoffset = static_cast<float>(x) - lastX;
-		float yoffset = lastY - static_cast<float>(y); // reversed since y-coordinates go from bottom to top
-
-		lastX = static_cast<float>(x);
-		lastY = static_cast<float>(y);
-
-		c.UpdateCameraDir(xoffset, yoffset);
-	}
+	//void MouseCallback(GLFWwindow* win, double x, double y)
+	//{
+	//	if (firstMouse)
+	//	{
+	//		lastX = static_cast<float>(x);
+	//		lastY = static_cast<float>(y);
+	//		firstMouse = false;
+	//	}
+	//
+	//	float xoffset = static_cast<float>(x) - lastX;
+	//	float yoffset = lastY - static_cast<float>(y); // reversed since y-coordinates go from bottom to top
+	//
+	//	lastX = static_cast<float>(x);
+	//	lastY = static_cast<float>(y);
+	//
+	//	c.UpdateCameraDir(xoffset, yoffset);
+	//}
 }
