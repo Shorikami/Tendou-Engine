@@ -4,6 +4,12 @@
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
+
+
+// TODO: Modify all file reading/writing functions with _s
+//#define CGLTF_IMPLEMENTATION
+//#include <cgltf.h>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
@@ -58,10 +64,11 @@ namespace Drevis
 		CreateIndexBuffers(builder.indices);
 	}
 
-	std::unique_ptr<Model> Model::CreateModelFromFile(DrevisDevice& device, const std::string& filePath)
+	std::unique_ptr<Model> Model::CreateModelFromFile(DrevisDevice& device, 
+		const std::string& filePath, const std::string& mtlPath)
 	{
 		Builder builder{};
-		builder.LoadModel(filePath);
+		builder.LoadModel(filePath, mtlPath);
 
 		std::cout << "Vertex count: " << builder.vertices.size() << std::endl;
 
@@ -161,14 +168,14 @@ namespace Drevis
 		}
 	}
 
-	void Model::Builder::LoadModel(const std::string& f)
+	void Model::Builder::LoadModel(const std::string& f, const std::string& m)
 	{
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
 		std::string warn, err;
 
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, f.c_str()))
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, f.c_str(), m.c_str()))
 		{
 			throw std::runtime_error(warn + err);
 		}

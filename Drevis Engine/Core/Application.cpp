@@ -270,7 +270,9 @@ namespace Drevis
 
 	void Application::LoadGameObjects()
 	{
-		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, "Materials/Models/smooth_vase.obj");
+		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, 
+			"Materials/Models/Shiroko/Mesh/Shiroko_Original_Weapon.obj",
+			"Materials/Models/Shiroko/Mesh/");
 
 		auto smoothVase = GameObject::CreateGameObject();
 		smoothVase.model = model;
@@ -288,17 +290,17 @@ namespace Drevis
 
 		gameObjects.emplace(floor.GetID(), std::move(floor));
 
-		for (unsigned i = 0; i < 1; ++i)
-		{
-			model = Model::CreateModelFromFile(device, "Materials/Models/sphere.obj");
-			
-			auto sphere = GameObject::CreateGameObject();
-			sphere.model = model;
-			sphere.transform.translation = glm::vec3(0.0f, 0.0f, 1.5f * (0.25f * i));
-			sphere.transform.scale = glm::vec3(1.f);
-			
-			gameObjects.emplace(sphere.GetID(), std::move(sphere));
-		}
+		//for (unsigned i = 0; i < 1; ++i)
+		//{
+		//	model = Model::CreateModelFromFile(device, "Materials/Models/sphere.obj");
+		//	
+		//	auto sphere = GameObject::CreateGameObject();
+		//	sphere.model = model;
+		//	sphere.transform.translation = glm::vec3(0.0f, 0.0f, 1.5f * (0.25f * i));
+		//	sphere.transform.scale = glm::vec3(1.f);
+		//	
+		//	gameObjects.emplace(sphere.GetID(), std::move(sphere));
+		//}
 
 
 

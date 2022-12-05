@@ -40,7 +40,7 @@ namespace Drevis
 			std::vector<Vertex> vertices{};
 			std::vector<uint32_t> indices{};
 
-			void LoadModel(const std::string& filePath);
+			void LoadModel(const std::string& filePath, const std::string& mtlPath = std::string());
 		};
 
 		Model(DrevisDevice& device, const Model::Builder& verts);
@@ -49,7 +49,8 @@ namespace Drevis
 		Model(const Model&) = delete;
 		Model& operator=(const Model&) = delete;
 
-		static std::unique_ptr<Model> CreateModelFromFile(DrevisDevice& device, const std::string& filePath);
+		static std::unique_ptr<Model> CreateModelFromFile(DrevisDevice& device, 
+			const std::string& filePath, const std::string& mtlPath = std::string());
 
 		void Bind(VkCommandBuffer commandBuffer);
 		void Draw(VkCommandBuffer commandBuffer);
