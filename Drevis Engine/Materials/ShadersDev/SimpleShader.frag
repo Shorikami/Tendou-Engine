@@ -5,6 +5,7 @@ layout(location = 0) out vec4 outColor;
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec3 fragPosWorld;
 layout(location = 2) in vec3 fragNormalWorld;
+layout(location = 3) in vec2 texCoords;
 
 layout(set = 0, binding = 0) uniform WorldUBO
 {
@@ -18,6 +19,8 @@ layout(set = 0, binding = 1) uniform LightUBO
 	vec3 lightPos;
 	vec4 lightColor;
 } lightUBO;
+
+layout(set = 0, binding = 2) uniform sampler2D tex;
 
 layout(push_constant) uniform Push
 {
@@ -35,5 +38,5 @@ void main()
 	
 	vec3 diff = lightColor * max(dot(normalize(fragNormalWorld), normalize(lightDir)), 0.0f);
 	
-	outColor = vec4((amb + diff) * fragColor, 1.0);
+	outColor = texture(tex, texCoords);
 }

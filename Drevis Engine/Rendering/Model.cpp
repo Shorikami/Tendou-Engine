@@ -65,10 +65,10 @@ namespace Drevis
 	}
 
 	std::unique_ptr<Model> Model::CreateModelFromFile(DrevisDevice& device, 
-		const std::string& filePath, const std::string& mtlPath)
+		const std::string& filePath, const std::string& mtlPath, bool flipY)
 	{
 		Builder builder{};
-		builder.LoadModel(filePath, mtlPath);
+		builder.LoadModel(filePath, flipY, mtlPath);
 
 		std::cout << "Vertex count: " << builder.vertices.size() << std::endl;
 
@@ -168,8 +168,10 @@ namespace Drevis
 		}
 	}
 
-	void Model::Builder::LoadModel(const std::string& f, const std::string& m)
+	void Model::Builder::LoadModel(const std::string& f, bool flipY, const std::string& m)
 	{
+		int multiplier = !flipY ? 1 : -1;
+
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -196,7 +198,7 @@ namespace Drevis
 					v.position =
 					{
 						attrib.vertices[3 * index.vertex_index + 0],
-						attrib.vertices[3 * index.vertex_index + 1],
+						multiplier * attrib.vertices[3 * index.vertex_index + 1],
 						attrib.vertices[3 * index.vertex_index + 2],
 					};
 
@@ -214,7 +216,7 @@ namespace Drevis
 					v.normal =
 					{
 						attrib.normals[3 * index.normal_index + 0],
-						attrib.normals[3 * index.normal_index + 1],
+						multiplier * attrib.normals[3 * index.normal_index + 1],
 						attrib.normals[3 * index.normal_index + 2],
 					};
 				}
@@ -224,7 +226,7 @@ namespace Drevis
 					v.uv =
 					{
 						attrib.texcoords[2 * index.texcoord_index + 0],
-						attrib.texcoords[2 * index.texcoord_index + 1],
+						1 - attrib.texcoords[2 * index.texcoord_index + 1],
 					};
 				}
 

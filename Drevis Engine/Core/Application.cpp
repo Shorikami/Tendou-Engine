@@ -7,6 +7,7 @@
 
 #include "../Rendering/RenderSystem.h"
 #include "../Rendering/Buffer.h"
+#include "../Rendering/Texture.h"
 
 
 #define GLM_FORCE_RADIANS
@@ -39,6 +40,7 @@ namespace Drevis
 		globalPool = DescriptorPool::Builder(device)
 			.SetMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
 			.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+			.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
 			.Build();
 
 		LoadGameObjects();
@@ -53,6 +55,8 @@ namespace Drevis
 	void Application::Run()
 	{
 		std::vector<std::unique_ptr<Buffer>> uboBuffers(2);
+		std::vector<std::unique_ptr<Texture>> textures(1);
+		
 
 		//for (int i = 0; i < uboBuffers.size(); ++i)
 		//{
@@ -81,9 +85,12 @@ namespace Drevis
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		uboBuffers[1]->Map();
 
+		textures[0] = std::make_unique<Texture>(device, "Materials/Models/Shiroko/Texture2D/Shiroko_Original_Weapon.png");
+
 		auto globalSetLayout = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build();
 
 		std::vector<VkDescriptorSet> globalDescriptorSets(1);
@@ -100,10 +107,12 @@ namespace Drevis
 
 		auto bufInfo = uboBuffers[0]->DescriptorInfo();
 		auto bufInfo2 = uboBuffers[1]->DescriptorInfo();
+		auto texInfo = textures[0]->DescriptorInfo();
 		
 		DescriptorWriter(*globalSetLayout, *globalPool)
 			.WriteBuffer(0, &bufInfo)
 			.WriteBuffer(1, &bufInfo2)
+			.WriteImage(2, &texInfo)
 			.Build(globalDescriptorSets[0]);
 
 		RenderSystem renderSys
@@ -177,6 +186,8 @@ namespace Drevis
 		vkDeviceWaitIdle(device.Device());
 	}
 
+
+	// TODO: Clean this up
 	void Application::InitImGUI()
 	{
 		IMGUI_CHECKVERSION();
@@ -272,23 +283,23 @@ namespace Drevis
 	{
 		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, 
 			"Materials/Models/Shiroko/Mesh/Shiroko_Original_Weapon.obj",
-			"Materials/Models/Shiroko/Mesh/");
+			"Materials/Models/Shiroko/Mesh/", true);
 
-		auto smoothVase = GameObject::CreateGameObject();
-		smoothVase.model = model;
-		smoothVase.transform.translation = glm::vec3(0.0f, 0.0f, 0.f);
-		smoothVase.transform.scale = glm::vec3(3.5f);
+		auto whiteFang = GameObject::CreateGameObject();
+		whiteFang.model = model;
+		whiteFang.transform.translation = glm::vec3(0.0f, 0.0f, 0.f);
+		whiteFang.transform.scale = glm::vec3(3.5f);
 
-		gameObjects.emplace(smoothVase.GetID(), std::move(smoothVase));
+		gameObjects.emplace(whiteFang.GetID(), std::move(whiteFang));
 
-		model = Model::CreateModelFromFile(device, "Materials/Models/quad.obj");
-
-		auto floor = GameObject::CreateGameObject();
-		floor.model = model;
-		floor.transform.translation = glm::vec3(0.0f, 0.5f, 0.0f);
-		floor.transform.scale = glm::vec3(3.5f);
-
-		gameObjects.emplace(floor.GetID(), std::move(floor));
+		//model = Model::CreateModelFromFile(device, "Materials/Models/quad.obj");
+		//
+		//auto floor = GameObject::CreateGameObject();
+		//floor.model = model;
+		//floor.transform.translation = glm::vec3(0.0f, 0.5f, 0.0f);
+		//floor.transform.scale = glm::vec3(3.5f);
+		//
+		//gameObjects.emplace(floor.GetID(), std::move(floor));
 
 		//for (unsigned i = 0; i < 1; ++i)
 		//{

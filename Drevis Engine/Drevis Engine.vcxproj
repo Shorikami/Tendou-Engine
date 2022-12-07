@@ -39,6 +39,7 @@
     <ClCompile Include="Rendering\Model.cpp" />
     <ClCompile Include="Rendering\RenderSystem.cpp" />
     <ClCompile Include="Rendering\Scene.cpp" />
+    <ClCompile Include="Rendering\Texture.cpp" />
     <ClCompile Include="Vulkan\DrevisDevice.cpp" />
     <ClCompile Include="Vulkan\Pipeline.cpp" />
     <ClCompile Include="Vulkan\SwapChain.cpp" />
@@ -66,6 +67,7 @@
     <ClInclude Include="Rendering\Model.h" />
     <ClInclude Include="Rendering\RenderSystem.h" />
     <ClInclude Include="Rendering\Scene.h" />
+    <ClInclude Include="Rendering\Texture.h" />
     <ClInclude Include="Utilities\Hasher.hpp" />
     <ClInclude Include="Vulkan\DrevisDevice.h" />
     <ClInclude Include="Vulkan\Pipeline.h" />
@@ -141,7 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\cgltf</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\cgltf;$(SolutionDir)Libraries\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -164,7 +166,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\cgltf</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\cgltf;$(SolutionDir)Libraries\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -187,7 +189,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\cgltf</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\cgltf;$(SolutionDir)Libraries\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -210,7 +212,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\cgltf</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\cgltf;$(SolutionDir)Libraries\stb</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>

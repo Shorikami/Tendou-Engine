@@ -47,6 +47,7 @@ namespace Drevis
         VkInstance GetInstance() { return instance; }
         VkCommandPool GetCommandPool() { return commandPool; }
         VkDevice Device() { return device_; }
+        VkPhysicalDevice PhysicalDevice() { return physicalDevice; }
         VkSurfaceKHR Surface() { return surface_; }
         VkQueue GraphicsQueue() { return graphicsQueue_; }
         VkQueue PresentQueue() { return presentQueue_; }
@@ -68,13 +69,21 @@ namespace Drevis
         void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         void CopyBufferToImage(
-            VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
+            VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount = 1);
 
+        // Texture/Image Helper Functions
+        VkImageView CreateImageView(VkImage image, VkFormat format);
+        void CreateImage(uint32_t width, uint32_t height,
+            VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+            VkMemoryPropertyFlags properties, VkImage& image,
+            VkDeviceMemory& imageMemory);
         void CreateImageWithInfo(
             const VkImageCreateInfo& imageInfo,
             VkMemoryPropertyFlags properties,
             VkImage& image,
             VkDeviceMemory& imageMemory);
+        void TransitionImageLayout(VkImage image, VkFormat format,
+            VkImageLayout oldLayout, VkImageLayout newLayout);
 
         VkPhysicalDeviceProperties properties;
 
