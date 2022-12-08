@@ -28,6 +28,7 @@
     <ClCompile Include="..\Libraries\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\Libraries\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Components\GameObject.cpp" />
+    <ClCompile Include="Components\Transform.cpp" />
     <ClCompile Include="Core\Application.cpp" />
     <ClCompile Include="Core\Entry.cpp" />
     <ClCompile Include="Core\Window.cpp" />
@@ -56,6 +57,7 @@
     <ClInclude Include="..\Libraries\imgui\imstb_textedit.h" />
     <ClInclude Include="..\Libraries\imgui\imstb_truetype.h" />
     <ClInclude Include="Components\GameObject.h" />
+    <ClInclude Include="Components\Transform.h" />
     <ClInclude Include="Core\Application.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="IO\Keyboard.h" />

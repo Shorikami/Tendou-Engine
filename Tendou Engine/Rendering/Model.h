@@ -46,6 +46,7 @@ namespace Tendou
 		{
 			std::vector<T> vertices{};
 			std::vector<uint32_t> indices{};
+			bool hasNormals = false;
 
 			void LoadOBJ(const std::string& filePath, bool flipY, const std::string& mtlPath = std::string());
 			void LoadGLTF(const std::string& filePath, bool flipY);

@@ -3,23 +3,13 @@
 
 #include "../Rendering/Model.h"
 
-#include <glm/gtc/matrix_transform.hpp>
+#include "../Components/Transform.h"
 
 #include <memory>
 #include <unordered_map>
 
 namespace Tendou
 {
-	struct TransformComponent
-	{
-		glm::vec3 translation{};
-		glm::vec3 scale{1.f, 1.f, 1.f};
-		glm::vec3 rotation{};
-
-		glm::mat4 mat4();
-		glm::mat3 normalMatrix();
-	};
-
 	class GameObject
 	{
 	public:
@@ -37,11 +27,13 @@ namespace Tendou
 		GameObject(GameObject&&) = default;
 		GameObject& operator=(GameObject&&) = default;
 
+		TransformComponent& Transform() { return m_Transform; }
+
 		id_t GetID() { return m_ID; }
 
 		std::shared_ptr<Model> model{};
 		glm::vec3 color{};
-		TransformComponent transform{};
+		
 
 	private:
 		GameObject(id_t objId)
@@ -49,6 +41,7 @@ namespace Tendou
 		{
 		}
 
+		TransformComponent m_Transform;
 		id_t m_ID;
 	};
 }

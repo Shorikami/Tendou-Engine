@@ -233,6 +233,7 @@ namespace Tendou
 
 				if (index.normal_index >= 0)
 				{
+					hasNormals = true;
 					v.normal =
 					{
 						attrib.normals[3 * index.normal_index + 0],
@@ -257,6 +258,11 @@ namespace Tendou
 				}
 				indices.push_back(uniqueVerts[v]);
 			}
+		}
+
+		if (!hasNormals)
+		{
+			// TODO: Manual normal generation
 		}
 	}
 

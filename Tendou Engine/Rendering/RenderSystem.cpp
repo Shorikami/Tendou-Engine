@@ -87,8 +87,8 @@ namespace Tendou
 			}
 
 			PushConstantData push{};
-			push.modelMatrix = obj.transform.mat4();
-			push.normalMatrix = obj.transform.normalMatrix();
+			push.modelMatrix = obj.Transform().Mat4();
+			push.normalMatrix = obj.Transform().NormalMatrix();
 
 			vkCmdPushConstants(frame.commandBuffer,
 				layout,
