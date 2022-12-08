@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32901.82
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tendou Engine", "Tendou Engine\Tendou Engine.vcxproj", "{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}.Debug|x64.ActiveCfg = Debug|x64
+		{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}.Debug|x64.Build.0 = Debug|x64
+		{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}.Debug|x86.ActiveCfg = Debug|Win32
+		{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}.Debug|x86.Build.0 = Debug|Win32
+		{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}.Release|x64.ActiveCfg = Release|x64
+		{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}.Release|x64.Build.0 = Release|x64
+		{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}.Release|x86.ActiveCfg = Release|Win32
+		{75FF8E10-9AC4-46E3-A62F-3E1E2C27102C}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D5B4F2BF-29E2-4A74-87AC-8C2DCAE38420}
+	EndGlobalSection
+EndGlobal
