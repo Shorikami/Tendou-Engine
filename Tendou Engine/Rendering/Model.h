@@ -58,7 +58,7 @@ namespace Tendou
 		Model(const Model&) = delete;
 		Model& operator=(const Model&) = delete;
 
-		static std::unique_ptr<Model> CreateModelFromFile(TendouDevice& device,
+		static std::unique_ptr<Model> CreateModelFromFile(TendouDevice& device, Type type,
 			const std::string& filePath, const std::string& mtlPath = std::string(), bool flipY = false);
 
 		void Bind(VkCommandBuffer commandBuffer);

@@ -289,9 +289,9 @@ namespace Tendou
 
 	void Application::LoadGameObjects()
 	{
-		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, 
+		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, Model::Type::OBJ,
 			"Materials/Models/Shiroko/Mesh/Shiroko_Original_Weapon.obj",
-			"Materials/Models/Shiroko/Mesh/", true);
+			"Materials/Models/Shiroko/Mesh/Texture2D/", true);
 
 		auto whiteFang = GameObject::CreateGameObject();
 		whiteFang.model = model;
@@ -300,7 +300,7 @@ namespace Tendou
 
 		gameObjects.emplace(whiteFang.GetID(), std::move(whiteFang));
 
-		model = Model::CreateModelFromFile(device, "Materials/Models/quad.obj");
+		model = Model::CreateModelFromFile(device, Model::Type::OBJ, "Materials/Models/quad.obj");
 		
 		auto floor = GameObject::CreateGameObject();
 		floor.model = model;
