@@ -16,6 +16,12 @@ namespace Drevis
 	class Model
 	{
 	public:
+		enum class Type
+		{
+			OBJ = 0,
+			GLTF
+		};
+
 		struct Vertex
 		{
 			glm::vec3 position;
@@ -35,15 +41,18 @@ namespace Drevis
 			}
 		};
 
+		template <typename T>
 		struct Builder
 		{
-			std::vector<Vertex> vertices{};
+			std::vector<T> vertices{};
 			std::vector<uint32_t> indices{};
 
-			void LoadModel(const std::string& filePath, bool flipY, const std::string& mtlPath = std::string());
+			void LoadOBJ(const std::string& filePath, bool flipY, const std::string& mtlPath = std::string());
+			void LoadGLTF(const std::string& filePath, bool flipY);
 		};
 
-		Model(DrevisDevice& device, const Model::Builder& verts);
+		template <typename T>
+		Model(DrevisDevice& device, const Model::Builder<T>& verts);
 		~Model();
 
 		Model(const Model&) = delete;

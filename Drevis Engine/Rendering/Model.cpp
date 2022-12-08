@@ -52,7 +52,8 @@ namespace Drevis
 		return attDesc;
 	}
 
-	Model::Model(DrevisDevice& device, const Model::Builder& builder)
+	template <typename T>
+	Model::Model(DrevisDevice& device, const Model::Builder<T>& builder)
 		: device_(device)
 	{
 		CreateVertexBuffers(builder.vertices);
@@ -62,8 +63,8 @@ namespace Drevis
 	std::unique_ptr<Model> Model::CreateModelFromFile(DrevisDevice& device, 
 		const std::string& filePath, const std::string& mtlPath, bool flipY)
 	{
-		Builder builder{};
-		builder.LoadModel(filePath, flipY, mtlPath);
+		Builder<Model::Vertex> builder{};
+		builder.LoadOBJ(filePath, flipY, mtlPath);
 
 		std::cout << "Vertex count: " << builder.vertices.size() << std::endl;
 
@@ -163,7 +164,8 @@ namespace Drevis
 		}
 	}
 
-	void Model::Builder::LoadModel(const std::string& f, bool flipY, const std::string& m)
+	template <typename T>
+	void Model::Builder<T>::LoadOBJ(const std::string& f, bool flipY, const std::string& m)
 	{
 		int multiplier = !flipY ? 1 : -1;
 
@@ -233,5 +235,11 @@ namespace Drevis
 				indices.push_back(uniqueVerts[v]);
 			}
 		}
+	}
+
+	template <typename T>
+	void Model::Builder<T>::LoadGLTF(const std::string& f, bool flipY)
+	{
+	
 	}
 }
