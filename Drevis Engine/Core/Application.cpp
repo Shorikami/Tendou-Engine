@@ -55,7 +55,7 @@ namespace Drevis
 	void Application::Run()
 	{
 		std::vector<std::unique_ptr<Buffer>> uboBuffers(2);
-		std::vector<std::unique_ptr<Texture>> textures(1);
+		std::vector<std::unique_ptr<Texture>> textures(2);
 		
 
 		//for (int i = 0; i < uboBuffers.size(); ++i)
@@ -86,6 +86,7 @@ namespace Drevis
 		uboBuffers[1]->Map();
 
 		textures[0] = std::make_unique<Texture>(device, "Materials/Models/Shiroko/Texture2D/Shiroko_Original_Weapon.png");
+		textures[1] = std::make_unique<Texture>(device, "Materials/Textures/c.png");
 
 		auto globalSetLayout = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -93,7 +94,7 @@ namespace Drevis
 			.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build();
 
-		std::vector<VkDescriptorSet> globalDescriptorSets(1);
+		std::vector<VkDescriptorSet> globalDescriptorSets(2);
 
 		//for (int i = 0; i < globalDescriptorSets.size(); ++i)
 		//{
@@ -108,12 +109,19 @@ namespace Drevis
 		auto bufInfo = uboBuffers[0]->DescriptorInfo();
 		auto bufInfo2 = uboBuffers[1]->DescriptorInfo();
 		auto texInfo = textures[0]->DescriptorInfo();
+		auto texInfo2 = textures[1]->DescriptorInfo();
 		
 		DescriptorWriter(*globalSetLayout, *globalPool)
 			.WriteBuffer(0, &bufInfo)
 			.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo)
 			.Build(globalDescriptorSets[0]);
+
+		DescriptorWriter(*globalSetLayout, *globalPool)
+			.WriteBuffer(0, &bufInfo)
+			.WriteBuffer(1, &bufInfo2)
+			.WriteImage(2, &texInfo2)
+			.Build(globalDescriptorSets[1]);
 
 		RenderSystem renderSys
 		{ 
@@ -139,7 +147,7 @@ namespace Drevis
 			{
 				int frameIdx = scene.GetFrameIndex();
 
-				FrameInfo f(frameIdx, frameTime, cmdBuf, c, globalDescriptorSets[0], gameObjects);
+				FrameInfo f(frameIdx, frameTime, cmdBuf, c, globalDescriptorSets, gameObjects);
 
 				// update
 				// -----
@@ -287,19 +295,19 @@ namespace Drevis
 
 		auto whiteFang = GameObject::CreateGameObject();
 		whiteFang.model = model;
-		whiteFang.transform.translation = glm::vec3(0.0f, 0.0f, 0.f);
+		whiteFang.transform.translation = glm::vec3(0.0f, -1.0f, 0.f);
 		whiteFang.transform.scale = glm::vec3(3.5f);
 
 		gameObjects.emplace(whiteFang.GetID(), std::move(whiteFang));
 
-		//model = Model::CreateModelFromFile(device, "Materials/Models/quad.obj");
-		//
-		//auto floor = GameObject::CreateGameObject();
-		//floor.model = model;
-		//floor.transform.translation = glm::vec3(0.0f, 0.5f, 0.0f);
-		//floor.transform.scale = glm::vec3(3.5f);
-		//
-		//gameObjects.emplace(floor.GetID(), std::move(floor));
+		model = Model::CreateModelFromFile(device, "Materials/Models/quad.obj");
+		
+		auto floor = GameObject::CreateGameObject();
+		floor.model = model;
+		floor.transform.translation = glm::vec3(0.0f, 0.5f, 0.0f);
+		floor.transform.scale = glm::vec3(3.5f);
+		
+		gameObjects.emplace(floor.GetID(), std::move(floor));
 
 		//for (unsigned i = 0; i < 1; ++i)
 		//{

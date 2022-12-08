@@ -1,4 +1,5 @@
 #include "Texture.h"
+#include "Buffer.h"
 
 #include <cassert>
 #include <stdexcept>
@@ -37,18 +38,29 @@ namespace Drevis
 			throw std::runtime_error("Failed to load texture image!");
 		}
 
-		// TODO: Use buffer class once you get this working
-		VkBuffer stagingBuf;
-		VkDeviceMemory stagingBufMemory;
-		device_.CreateBuffer(imageSize,
+		Buffer stagingBuf
+		{
+			device_,
+			imageSize,
+			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			stagingBuf, stagingBufMemory);
+		};
 
-		void* data;
-		vkMapMemory(device_.Device(), stagingBufMemory, 0, imageSize, 0, &data);
-		memcpy(data, res, static_cast<size_t>(imageSize));
-		vkUnmapMemory(device_.Device(), stagingBufMemory);
+		stagingBuf.Map();
+		stagingBuf.WriteToBuffer(res, static_cast<size_t>(imageSize));
+		stagingBuf.Unmap();
+		//VkBuffer stagingBuf;
+		//VkDeviceMemory stagingBufMemory;
+		//device_.CreateBuffer(imageSize,
+		//	VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		//	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		//	stagingBuf, stagingBufMemory);
+		//
+		//void* data;
+		//vkMapMemory(device_.Device(), stagingBufMemory, 0, imageSize, 0, &data);
+		//memcpy(data, res, static_cast<size_t>(imageSize));
+		//vkUnmapMemory(device_.Device(), stagingBufMemory);
 
 		stbi_image_free(res);
 
@@ -59,13 +71,13 @@ namespace Drevis
 		device_.TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		device_.CopyBufferToImage(stagingBuf, textureImage, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+		device_.CopyBufferToImage(stagingBuf.GetBuffer(), textureImage, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
 		device_.TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		vkDestroyBuffer(device_.Device(), stagingBuf, nullptr);
-		vkFreeMemory(device_.Device(), stagingBufMemory, nullptr);
+		//vkDestroyBuffer(device_.Device(), stagingBuf, nullptr);
+		//vkFreeMemory(device_.Device(), stagingBufMemory, nullptr);
 	}
 
 	void Texture::CreateTextureImageView()

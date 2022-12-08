@@ -9,12 +9,12 @@ namespace Drevis
 {
 	struct FrameInfo
 	{
-		FrameInfo(int a, float b, VkCommandBuffer c, Camera& d, VkDescriptorSet e, GameObject::Map& f)
+		FrameInfo(int a, float b, VkCommandBuffer c, Camera& d, std::vector<VkDescriptorSet> e, GameObject::Map& f)
 			: frameIdx(a)
 			, frameTime(b)
 			, commandBuffer(c)
 			, cam(d)
-			, globalDescriptorSet(e)
+			, descriptorSets(e)
 			, gameObjects(f)
 		{
 		}
@@ -23,7 +23,7 @@ namespace Drevis
 		float frameTime;
 		VkCommandBuffer commandBuffer;
 		Camera& cam;
-		VkDescriptorSet globalDescriptorSet;
+		std::vector<VkDescriptorSet> descriptorSets;
 		GameObject::Map& gameObjects;
 	};
 }

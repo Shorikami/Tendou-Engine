@@ -76,11 +76,7 @@ namespace Drevis
 	void RenderSystem::RenderGameObjects(FrameInfo& frame)
 	{
 		pipeline[0]->Bind(frame.commandBuffer);
-
-		vkCmdBindDescriptorSets(frame.commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			layout, 0, 1, &frame.globalDescriptorSet,
-			0, nullptr);
+		int count = 0;
 
 		for (auto& kv : frame.gameObjects)
 		{
@@ -100,6 +96,11 @@ namespace Drevis
 				0,
 				sizeof(PushConstantData),
 				&push);
+
+			vkCmdBindDescriptorSets(frame.commandBuffer,
+				VK_PIPELINE_BIND_POINT_GRAPHICS,
+				layout, 0, 1, &frame.descriptorSets[count++],
+				0, nullptr);
 
 			obj.model->Bind(frame.commandBuffer);
 			obj.model->Draw(frame.commandBuffer);
