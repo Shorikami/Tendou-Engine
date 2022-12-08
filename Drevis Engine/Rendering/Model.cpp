@@ -5,11 +5,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-
-// TODO: Modify all file reading/writing functions with _s
-//#define CGLTF_IMPLEMENTATION
-//#include <cgltf.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
