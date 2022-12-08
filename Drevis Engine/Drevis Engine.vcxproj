@@ -143,7 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\stb</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\stb;$(SolutionDir)Libraries\tinygltf</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -166,7 +166,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\stb</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\stb;$(SolutionDir)Libraries\tinygltf</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -189,7 +189,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\stb</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\stb;$(SolutionDir)Libraries\tinygltf</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
@@ -212,7 +212,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\stb</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)\Include;$(SolutionDir)Libraries\glm;$(SolutionDir)Libraries\glfw\include;$(SolutionDir)Libraries\imgui;$(SolutionDir)Libraries\tinyobjloader;$(SolutionDir)Libraries\stb;$(SolutionDir)Libraries\tinygltf</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
