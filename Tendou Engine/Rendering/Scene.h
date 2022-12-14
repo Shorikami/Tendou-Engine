@@ -23,6 +23,7 @@ namespace Tendou
 
 		__inline bool IsFrameInProgress() const { return isFrameStarted; }
 		__inline VkRenderPass GetSwapChainRenderPass() const { return swapChain->GetRenderPass(); }
+		__inline SwapChain* GetSwapChain()  { return swapChain.get(); }
 		float GetAspectRatio() const { return swapChain->ExtentAspectRatio(); }
 
 		VkCommandBuffer GetCurrentCommandBuffer() const 
@@ -62,6 +63,7 @@ namespace Tendou
 		bool isFrameStarted = false;
 
 		friend class Application;
+		friend class Editor;
 	};
 }
 

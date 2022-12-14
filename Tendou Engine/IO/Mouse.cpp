@@ -1,5 +1,4 @@
 #include "Mouse.h"
-#include "../Core/Globals.h"
 
 namespace Tendou
 {

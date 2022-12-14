@@ -120,6 +120,7 @@ namespace Tendou
         const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
         friend class Application;
+        friend class Editor;
     };
 
 }

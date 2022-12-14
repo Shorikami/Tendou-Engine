@@ -1,11 +1,8 @@
 #include "Application.h"
 
-// Include ImGUI
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
+#include "../Editor/Editor.h"
+#include "../Vulkan/Systems/Default.h"
 
-#include "../Rendering/RenderSystem.h"
 #include "../Rendering/Buffer.h"
 #include "../Rendering/Texture.h"
 
@@ -43,13 +40,12 @@ namespace Tendou
 			.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
 			.Build();
 
+		editor = std::make_unique<Editor>(appWindow, scene, device);
 		LoadGameObjects();
 	}
 
 	Application::~Application()
 	{
-		vkDestroyDescriptorPool(device.Device(), imguiPool, nullptr);
-		ImGui_ImplVulkan_Shutdown();
 	}
 
 	void Application::Run()
@@ -123,7 +119,7 @@ namespace Tendou
 			.WriteImage(2, &texInfo2)
 			.Build(globalDescriptorSets[1]);
 
-		RenderSystem renderSys
+		DefaultSystem defaultSys
 		{ 
 			device, 
 			scene.GetSwapChainRenderPass(), 
@@ -131,8 +127,6 @@ namespace Tendou
 		};
 
 		auto currTime = std::chrono::high_resolution_clock::now();
-
-		InitImGUI();
 
 		do
 		{
@@ -167,26 +161,17 @@ namespace Tendou
 
 				//render
 				// -----
-				ImGui_ImplVulkan_NewFrame();
-				ImGui_ImplGlfw_NewFrame();
-				ImGui::NewFrame();
-
-				// TODO: ImGui options?
-
-				// DEMO WINDOW
-				ImGui::ShowDemoWindow();
-
+				editor.get()->Setup();
 
 				scene.BeginSwapChainRenderPass(cmdBuf);
+				
+				defaultSys.RenderGameObjects(f);
 
-				ImGui::Render();
-				renderSys.RenderGameObjects(f);
+				// NOTE: Render the editor AFTER all render passes;
+				// rendering the editor first draws it behind objects
+				editor.get()->Draw(cmdBuf);
 
-				// DO NOT FORGET TO DO THIS CALL!!!
-				// Todo: Abstract ImGui calls?
-				ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuf);
 				scene.EndSwapChainRenderPass(cmdBuf);
-
 				scene.EndFrame();
 			}
 		} while (appWindow.ShouldClose());
@@ -198,93 +183,7 @@ namespace Tendou
 	// TODO: Clean this up
 	void Application::InitImGUI()
 	{
-		IMGUI_CHECKVERSION();
-		//1: create descriptor pool for IMGUI
-		// the size of the pool is very oversize, but it's copied from imgui demo itself.
-		VkDescriptorPoolSize pool_sizes[] =
-		{
-			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-		};
 
-		VkDescriptorPoolCreateInfo pool_info = {};
-		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		pool_info.maxSets = 1000;
-		pool_info.poolSizeCount = std::size(pool_sizes);
-		pool_info.pPoolSizes = pool_sizes;
-
-		if (vkCreateDescriptorPool(device.Device(), &pool_info, nullptr, &imguiPool) != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to initialize vulkan ImGUI pool!");
-		}
-
-		// Setup Dear ImGui context
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-		// Setup Dear ImGui style
-		//ImGui::StyleColorsDark();
-		ImGui::StyleColorsClassic();
-
-		ImGui_ImplGlfw_InitForVulkan(appWindow.GetGLFWwindow(), true);
-		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = device.instance;
-		init_info.PhysicalDevice = device.physicalDevice;
-		init_info.Device = device.Device();
-		init_info.QueueFamily = device.FindQueueFamilies(device.physicalDevice).graphicsFamily;
-		init_info.Queue = device.graphicsQueue_;
-		init_info.DescriptorPool = imguiPool;
-		init_info.MinImageCount = scene.swapChain->ImageCount();
-		init_info.ImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
-		ImGui_ImplVulkan_Init(&init_info, scene.GetSwapChainRenderPass());
-
-		// IMGUI COMMAND BUFFER
-		// TODO: Move these to single command buffer functions
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = device.commandPool;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(device.Device(), &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-		ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
-
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(device.GraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(device.GraphicsQueue());
-
-		vkFreeCommandBuffers(device.Device(), device.commandPool, 1, &commandBuffer);
-
-		vkDeviceWaitIdle(device.Device());
-
-		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
 
 	void Application::LoadGameObjects()
@@ -294,33 +193,34 @@ namespace Tendou
 			"Materials/Models/Shiroko/Mesh/Texture2D/", true);
 
 		auto whiteFang = GameObject::CreateGameObject();
-		whiteFang.model = model;
-		whiteFang.transform.translation = glm::vec3(0.0f, -1.0f, 0.f);
-		whiteFang.transform.scale = glm::vec3(3.5f);
+		whiteFang.SetModel(model);
+		whiteFang.GetTransform().SetTranslation(glm::vec3(0.f));
+		whiteFang.GetTransform().SetScale(glm::vec3(3.5f));
 
 		gameObjects.emplace(whiteFang.GetID(), std::move(whiteFang));
+
+
+		model = Model::CreateModelFromFile(device, Model::Type::OBJ,
+			"Materials/Models/sphere.obj", std::string(), true);
+
+		for (unsigned i = 0; i < 8; ++i)
+		{
+			auto sphere = GameObject::CreateGameObject();
+			sphere.SetModel(model);
+			sphere.GetTransform().SetTranslation(glm::vec3(0.f));
+			sphere.GetTransform().SetScale(glm::vec3(0.08f));
+
+			gameObjects.emplace(sphere.GetID(), std::move(sphere));
+		}
 
 		model = Model::CreateModelFromFile(device, Model::Type::OBJ, "Materials/Models/quad.obj");
 		
 		auto floor = GameObject::CreateGameObject();
-		floor.model = model;
-		floor.transform.translation = glm::vec3(0.0f, 0.5f, 0.0f);
-		floor.transform.scale = glm::vec3(3.5f);
+		floor.SetModel(model);
+		floor.GetTransform().SetTranslation(glm::vec3(0.0f, 0.5f, 0.0f));
+		floor.GetTransform().SetScale(glm::vec3(3.5f));
 		
 		gameObjects.emplace(floor.GetID(), std::move(floor));
-
-		//for (unsigned i = 0; i < 1; ++i)
-		//{
-		//	model = Model::CreateModelFromFile(device, "Materials/Models/sphere.obj");
-		//	
-		//	auto sphere = GameObject::CreateGameObject();
-		//	sphere.model = model;
-		//	sphere.transform.translation = glm::vec3(0.0f, 0.0f, 1.5f * (0.25f * i));
-		//	sphere.transform.scale = glm::vec3(1.f);
-		//	
-		//	gameObjects.emplace(sphere.GetID(), std::move(sphere));
-		//}
-
 
 
 		//model = Model::CreateModelFromFile(device, "Materials/Models/flat_vase.obj");

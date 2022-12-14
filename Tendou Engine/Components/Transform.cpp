@@ -2,36 +2,48 @@
 
 namespace Tendou
 {
-	TransformComponent::TransformComponent()
-		: translation(glm::vec3(0.0f))
+	Transform::Transform()
+		: modelMat(glm::mat4(1.0f))
+		, translation(glm::vec3(0.0f))
 		, rotation(glm::vec3(0.0f))
 		, scale(glm::vec3(1.0f))
+		, angleOfRotation(0.0f)
 	{
 	
 	}
 
-	TransformComponent::TransformComponent(glm::vec3 tr, glm::vec3 rot, glm::vec3 scale)
-		: translation(tr)
+	Transform::Transform(glm::vec3 tr, glm::vec3 rot, glm::vec3 scale)
+		: modelMat(glm::mat4(1.0f))
+		, translation(tr)
 		, rotation(rot)
 		, scale(scale)
+		, angleOfRotation(0.0f)
 	{
 
 	}
 
-	TransformComponent::~TransformComponent()
+	Transform::~Transform()
 	{
 
 	}
 
-	void TransformComponent::Update()
+	void Transform::Update(bool rotate)
 	{
+		modelMat = glm::mat4(1.0f);
 
+		if (rotate)
+		{
+			modelMat = glm::rotate(modelMat, angleOfRotation, rotation);
+		}
+
+		modelMat = glm::scale(modelMat, scale)
+			* glm::translate(modelMat, translation);
 	}
 
 	// Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
 	// Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)
 	// https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-	glm::mat4 TransformComponent::Mat4()
+	glm::mat4 Transform::Mat4()
 	{
 		const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);
@@ -63,7 +75,7 @@ namespace Tendou
 		};
 	}
 
-	glm::mat3 TransformComponent::NormalMatrix()
+	glm::mat3 Transform::NormalMatrix()
 	{
 		const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);

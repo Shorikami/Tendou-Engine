@@ -262,7 +262,78 @@ namespace Tendou
 
 		if (!hasNormals)
 		{
+			std::vector<glm::vec3> vvv;
+			std::vector<glm::vec3> temp(vertices.size());
+
 			// TODO: Manual normal generation
+			uint32_t idx = 0;
+
+			for (; idx < indices.size();)
+			{
+				GLuint a = indices.at(idx++);
+				GLuint b = indices.at(idx++);
+				GLuint c = indices.at(idx++);
+
+				glm::vec3 vA = vertices[a].position;
+				glm::vec3 vB = vertices[b].position;
+				glm::vec3 vC = vertices[c].position;
+
+				glm::vec3 E1 = vB - vA;
+				glm::vec3 E2 = vC - vA;
+
+				glm::vec3 N = glm::normalize(glm::cross(E1, E2));
+
+				if (N.x < 0.0001f && N.x > -0.0001f)
+				{
+					N.x = 0.0f;
+				}
+				if (N.y < 0.0001f && N.y > -0.0001f)
+				{
+					N.y = 0.0f;
+				}
+				if (N.z < 0.0001f && N.z > -0.0001f)
+				{
+					N.z = 0.0f;
+				}
+
+				vvv.push_back(N);
+			}
+
+			for (int idx = 0; idx < vertices.size(); ++idx)
+			{
+				glm::vec3 vNormal(0.0f);
+
+				int bb = 0;
+				std::vector<glm::vec3> dup;
+
+				for (int kk = 0; bb < indices.size(); ++kk)
+				{
+					GLuint a = indices.at(bb++);
+					GLuint b = indices.at(bb++);
+					GLuint c = indices.at(bb++);
+
+					if (a == idx || b == idx || c == idx)
+					{
+						bool isDup = false;
+
+						for (int k = 0; k < dup.size(); ++k)
+						{
+							if (vvv[kk] == dup[k])
+							{
+								isDup = true;
+							}
+						}
+
+						if (!isDup)
+						{
+							dup.push_back(vvv[kk]);
+							vNormal += vvv[kk];
+						}
+					}
+				}
+
+				vertices[idx].normal = glm::normalize(vNormal);
+			}
 		}
 	}
 

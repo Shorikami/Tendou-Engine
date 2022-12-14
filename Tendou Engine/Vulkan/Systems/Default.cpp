@@ -1,4 +1,4 @@
-#include "RenderSystem.h"
+#include "Default.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -17,19 +17,14 @@ namespace Tendou
 		glm::mat4 normalMatrix{ 1.0f };
 	};
 
-	RenderSystem::RenderSystem(TendouDevice& device_, VkRenderPass pass, VkDescriptorSetLayout g)
-		: device(device_)
+	DefaultSystem::DefaultSystem(TendouDevice& device, VkRenderPass pass, VkDescriptorSetLayout set)
+		: RenderSystem(device)
 	{
-		CreatePipelineLayout(g);
+		CreatePipelineLayout(set);
 		CreatePipeline(pass);
 	}
 
-	RenderSystem::~RenderSystem()
-	{
-		vkDestroyPipelineLayout(device.Device(), layout, nullptr);
-	}
-
-	void RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout v)
+	void DefaultSystem::CreatePipelineLayout(VkDescriptorSetLayout v)
 	{
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -49,11 +44,9 @@ namespace Tendou
 		{
 			throw std::runtime_error("Failed to create pipeline layout!");
 		}
-
-		
 	}
 
-	void RenderSystem::CreatePipeline(VkRenderPass pass)
+	void DefaultSystem::CreatePipeline(VkRenderPass pass)
 	{
 		assert(layout != nullptr && "Cannot create pipeline before layout!");
 
@@ -73,22 +66,26 @@ namespace Tendou
 			pipelineConfig));
 	}
 
-	void RenderSystem::RenderGameObjects(FrameInfo& frame)
+	void DefaultSystem::RenderGameObjects(FrameInfo& frame)
 	{
 		pipeline[0]->Bind(frame.commandBuffer);
 		int count = 0;
 
 		for (auto& kv : frame.gameObjects)
 		{
+			int ii = 0;
 			auto& obj = kv.second;
-			if (obj.model == nullptr)
+			if (obj.GetModel() == nullptr)
 			{
 				continue;
 			}
 
+			// TODO: Move this out to a separate update loop
+			obj.GetTransform().Update();
+
 			PushConstantData push{};
-			push.modelMatrix = obj.Transform().Mat4();
-			push.normalMatrix = obj.Transform().NormalMatrix();
+			push.modelMatrix = obj.GetTransform().ModelMat();
+			push.normalMatrix = obj.GetTransform().NormalMatrix();
 
 			vkCmdPushConstants(frame.commandBuffer,
 				layout,
@@ -99,12 +96,16 @@ namespace Tendou
 
 			vkCmdBindDescriptorSets(frame.commandBuffer,
 				VK_PIPELINE_BIND_POINT_GRAPHICS,
-				layout, 0, 1, &frame.descriptorSets[count++],
+				layout, 0, 1, &frame.descriptorSets[count],
 				0, nullptr);
 
-			obj.model->Bind(frame.commandBuffer);
-			obj.model->Draw(frame.commandBuffer);
+			if (count < frame.descriptorSets.size() - 1)
+			{
+				++count;
+			}
+
+			obj.GetModel()->Bind(frame.commandBuffer);
+			obj.GetModel()->Draw(frame.commandBuffer);
 		}
 	}
-
 }

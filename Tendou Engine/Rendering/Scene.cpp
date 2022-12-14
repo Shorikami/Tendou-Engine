@@ -72,8 +72,6 @@ namespace Tendou
 				throw std::runtime_error("Swap chain image (or depth) format has changed!");
 			}
 		}
-
-		
 	}
 
 	VkCommandBuffer Scene::BeginFrame()

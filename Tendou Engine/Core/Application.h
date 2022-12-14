@@ -2,12 +2,12 @@
 #define APPLICATION_H
 
 #include "Window.h"
-#include "Globals.h"
 
+#include "../Vulkan/Descriptor.h"
 #include "../Vulkan/TendouDevice.h"
 
 #include "../Rendering/Scene.h"
-#include "../Rendering/Descriptor.h"
+#include "../Editor/Editor.h"
 
 #include "../Components/GameObject.h"
 
@@ -39,7 +39,7 @@ namespace Tendou
 		Scene scene{ appWindow, device };
 
 		VkPipelineLayout layout;
-		VkDescriptorPool imguiPool; // todo: abstract this later
+		std::unique_ptr<Editor> editor;
 
 		// Note: order of declarations matters - need the global pool to be destroyed
 		// before the device
