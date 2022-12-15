@@ -42,7 +42,7 @@
     <ClCompile Include="Rendering\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Rendering\Scene.cpp">
+    <ClCompile Include="Rendering\Scenes\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Vulkan\Systems\RenderSystem.cpp">
@@ -102,6 +102,9 @@
     <ClCompile Include="Editor\Editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Rendering\Scenes\SimpleScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Application.h">
@@ -125,7 +128,7 @@
     <ClInclude Include="Components\GameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rendering\Scene.h">
+    <ClInclude Include="Rendering\Scenes\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Vulkan\Systems\RenderSystem.h">
@@ -192,6 +195,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Editor\Editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\UniformBuffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\Scenes\SimpleScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

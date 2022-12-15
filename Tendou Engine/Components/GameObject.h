@@ -16,10 +16,10 @@ namespace Tendou
 		using id_t = unsigned int;
 		using Map = std::unordered_map<id_t, GameObject>;
 
-		static GameObject CreateGameObject()
+		static GameObject CreateGameObject(std::string tag = std::string())
 		{
 			static id_t currId = 0;
-			return GameObject(currId++);
+			return GameObject(currId++, tag);
 		}
 
 		GameObject(const GameObject&) = delete;
@@ -42,9 +42,9 @@ namespace Tendou
 		
 
 	private:
-		GameObject(id_t objId)
+		GameObject(id_t objId, std::string tag)
 			: m_ID(objId)
-			, m_Tag(std::string())
+			, m_Tag(tag)
 		{
 		}
 

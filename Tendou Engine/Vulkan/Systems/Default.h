@@ -13,11 +13,15 @@ namespace Tendou
 		DefaultSystem(const DefaultSystem&) = delete;
 		DefaultSystem& operator=(const DefaultSystem&) = delete;
 
-		void RenderGameObjects(FrameInfo& frame) override;
+		void Render(FrameInfo& frame) override;
 
 	protected:
 		void CreatePipelineLayout(VkDescriptorSetLayout v) override;
 		void CreatePipeline(VkRenderPass pass) override;
+	
+	private:
+		void RenderObject(GameObject& obj, FrameInfo& f);
+		void RenderSpheres(GameObject& obj, FrameInfo& f, float angle, int idx);
 	};
 }
 

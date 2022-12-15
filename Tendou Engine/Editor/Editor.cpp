@@ -14,7 +14,7 @@
 
 namespace Tendou
 {
-	Editor::Editor(Window& appWindow, Scene& scene, TendouDevice& device)
+	Editor::Editor(Window& appWindow, Scene* scene, TendouDevice& device)
 		: td(device)
 	{
 		IMGUI_CHECKVERSION();
@@ -60,15 +60,15 @@ namespace Tendou
 
 		ImGui_ImplGlfw_InitForVulkan(appWindow.GetGLFWwindow(), true);
 		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = scene.device.instance;
-		init_info.PhysicalDevice = scene.device.physicalDevice;
+		init_info.Instance = scene->device.instance;
+		init_info.PhysicalDevice = scene->device.physicalDevice;
 		init_info.Device = td.Device();
-		init_info.QueueFamily = scene.device.FindQueueFamilies(td.physicalDevice).graphicsFamily;
+		init_info.QueueFamily = scene->device.FindQueueFamilies(td.physicalDevice).graphicsFamily;
 		init_info.Queue = td.graphicsQueue_;
 		init_info.DescriptorPool = imguiPool;
-		init_info.MinImageCount = static_cast<uint32_t>(scene.swapChain->ImageCount());
+		init_info.MinImageCount = static_cast<uint32_t>(scene->swapChain->ImageCount());
 		init_info.ImageCount = SwapChain::MAX_FRAMES_IN_FLIGHT;
-		ImGui_ImplVulkan_Init(&init_info, scene.GetSwapChainRenderPass());
+		ImGui_ImplVulkan_Init(&init_info, scene->GetSwapChainRenderPass());
 
 		// IMGUI COMMAND BUFFER
 		VkCommandBuffer commandBuffer = td.BeginSingleTimeCommands();

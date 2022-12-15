@@ -44,6 +44,7 @@ namespace Tendou
 		Pipeline& operator=(const Pipeline&) = delete;
 
 		void Bind(VkCommandBuffer commandBuffer);
+		void Unbind(VkCommandBuffer commandBuffer);
 
 		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
@@ -59,6 +60,8 @@ namespace Tendou
 		TendouDevice& drevisDevice;
 		VkPipeline graphicsPipeline;
 		VkShaderModule vertShaderModule, fragShaderModule;
+
+		bool bound = false;
 	};
 }
 

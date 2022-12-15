@@ -23,7 +23,7 @@ namespace Tendou
 		RenderSystem(const RenderSystem&) = delete;
 		RenderSystem& operator=(const RenderSystem&) = delete;
 
-		virtual void RenderGameObjects(FrameInfo& frame) = 0;
+		virtual void Render(FrameInfo& frame) = 0;
 
 	protected:
 		virtual void CreatePipelineLayout(VkDescriptorSetLayout v) = 0;

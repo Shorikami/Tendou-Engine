@@ -66,22 +66,18 @@ namespace Tendou
 			pipelineConfig));
 	}
 
-	void DefaultSystem::RenderGameObjects(FrameInfo& frame)
+	void DefaultSystem::Render(FrameInfo& frame)
 	{
-		pipeline[0]->Bind(frame.commandBuffer);
-		int count = 0;
+		static float angle = 0.0f;
+		int count = 0, ii = 0;
 
 		for (auto& kv : frame.gameObjects)
 		{
-			int ii = 0;
 			auto& obj = kv.second;
 			if (obj.GetModel() == nullptr)
 			{
 				continue;
 			}
-
-			// TODO: Move this out to a separate update loop
-			obj.GetTransform().Update();
 
 			PushConstantData push{};
 			push.modelMatrix = obj.GetTransform().ModelMat();
@@ -93,19 +89,48 @@ namespace Tendou
 				0,
 				sizeof(PushConstantData),
 				&push);
-
-			vkCmdBindDescriptorSets(frame.commandBuffer,
-				VK_PIPELINE_BIND_POINT_GRAPHICS,
-				layout, 0, 1, &frame.descriptorSets[count],
-				0, nullptr);
-
-			if (count < frame.descriptorSets.size() - 1)
+			
+			// TODO: Move this out to a separate update loop?
+			if (obj.GetTag() == "Sphere")
 			{
-				++count;
+				RenderSpheres(obj, frame, angle, ii++);
 			}
-
-			obj.GetModel()->Bind(frame.commandBuffer);
-			obj.GetModel()->Draw(frame.commandBuffer);
+			else
+			{
+				RenderObject(obj, frame);
+			}
 		}
+
+		angle += 0.01f;
+		if (angle > glm::pi<float>())
+		{
+			angle = 0.0f;
+		}
+	}
+
+	void DefaultSystem::RenderObject(GameObject& obj, FrameInfo& f)
+	{
+		pipeline[0]->Bind(f.commandBuffer);
+		obj.GetTransform().Update();
+
+		vkCmdBindDescriptorSets(f.commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			layout, 0, 1, &f.descriptorSets[0],
+			0, nullptr);
+
+		obj.GetModel()->Bind(f.commandBuffer);
+		obj.GetModel()->Draw(f.commandBuffer);
+	}
+
+	void DefaultSystem::RenderSpheres(GameObject& obj, FrameInfo& f, float angle, int idx)
+	{
+		pipeline[1]->Bind(f.commandBuffer);
+
+		float res = angle + (glm::pi<float>() / 8.0f) * idx;
+		obj.GetTransform().SetRotationAngle(res);
+		obj.GetTransform().Update(true);
+
+		obj.GetModel()->Bind(f.commandBuffer);
+		obj.GetModel()->Draw(f.commandBuffer);
 	}
 }

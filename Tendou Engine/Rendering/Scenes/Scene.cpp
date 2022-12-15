@@ -1,8 +1,8 @@
 #include "Scene.h"
-#include "../Core/Application.h"
+#include "../../Core/Application.h"
 
-#include "../IO/Mouse.h"
-#include "../IO/Keyboard.h"
+#include "../../IO/Mouse.h"
+#include "../../IO/Keyboard.h"
 
 #include <stdexcept>
 #include <array>
@@ -21,6 +21,26 @@ namespace Tendou
 	Scene::~Scene()
 	{
 		FreeCommandBuffers();
+	}
+
+	int Scene::Init()
+	{
+		return -1;
+	}
+
+	int Scene::PreUpdate()
+	{
+		return -1;
+	}
+
+	int Scene::Update()
+	{
+		return -1;
+	}
+
+	int Scene::PostUpdate()
+	{
+		return -1;
 	}
 
 	void Scene::CreateCommandBuffers()

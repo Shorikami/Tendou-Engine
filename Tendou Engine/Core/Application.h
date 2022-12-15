@@ -6,10 +6,12 @@
 #include "../Vulkan/Descriptor.h"
 #include "../Vulkan/TendouDevice.h"
 
-#include "../Rendering/Scene.h"
 #include "../Editor/Editor.h"
 
 #include "../Components/GameObject.h"
+#include "../Rendering/Scenes/Scene.h"
+
+#include "../Rendering/UniformBuffer.hpp"
 
 #include <memory>
 #include <vector>
@@ -31,21 +33,11 @@ namespace Tendou
 		void Run();
 
 	private:
-		void InitImGUI();
-		void LoadGameObjects();
-
 		Window appWindow{ Tendou::WIDTH, Tendou::HEIGHT, "Drevis Engine" };
 		TendouDevice device{ appWindow };
-		Scene scene{ appWindow, device };
 
-		VkPipelineLayout layout;
 		std::unique_ptr<Editor> editor;
-
-		// Note: order of declarations matters - need the global pool to be destroyed
-		// before the device
-		std::unique_ptr<DescriptorPool> globalPool{};
-		GameObject::Map gameObjects;
-		Camera c;
+		std::unique_ptr<Scene> scene;
 	};
 }
 

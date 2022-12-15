@@ -26,7 +26,7 @@ layout(set = 0, binding = 1) uniform LightUBO
 
 layout(push_constant) uniform Push
 {
-	mat4 modelMatrix; // projection * view * model
+	mat4 modelMatrix;
 	mat4 normalMatrix;
 } push;
 

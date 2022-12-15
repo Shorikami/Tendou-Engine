@@ -2,14 +2,14 @@
 #define EDITOR_H
 
 #include "../Core/Window.h"
-#include "../Rendering/Scene.h"
+#include "../Rendering/Scenes/Scene.h"
 
 namespace Tendou
 {
 	class Editor
 	{
 	public:
-		Editor(Window& w, Scene& s, TendouDevice& td);
+		Editor(Window& w, Scene* s, TendouDevice& td);
 		~Editor();
 
 		Editor(const Editor&) = delete;
