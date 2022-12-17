@@ -89,11 +89,11 @@ namespace Tendou
 				sizeof(PushConstantData),
 				&push);
 			
-			if (obj.GetTag() == "Sphere")
+			if (obj.GetTag() == "Sphere" && obj.GetRender())
 			{
 				RenderSpheres(obj, frame);
 			}
-			else
+			else if (obj.GetTag() != "Sphere")
 			{
 				RenderObject(obj, frame);
 			}

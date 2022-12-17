@@ -29,12 +29,14 @@ namespace Tendou
 
 		id_t GetID() { return m_ID; }
 		std::string GetTag() { return m_Tag; }
+		bool GetRender() { return render; }
 
 		std::shared_ptr<Model> GetModel() { return model; }
 		Transform& GetTransform() { return m_Transform; }
 
 
 		void SetTag(std::string t) { m_Tag = t; }
+		void SetRender(bool b) { render = b; }
 
 		void SetModel(std::shared_ptr<Model> m) { model = m; }
 
@@ -50,6 +52,8 @@ namespace Tendou
 
 		id_t m_ID;
 		std::string m_Tag;
+		bool render = true;
+
 		std::shared_ptr<Model> model{};
 		
 		// Components

@@ -33,7 +33,7 @@ namespace Tendou
 		void Run();
 
 	private:
-		Window appWindow{ Tendou::WIDTH, Tendou::HEIGHT, "Drevis Engine" };
+		Window appWindow{ Tendou::WIDTH, Tendou::HEIGHT, "Tendou Engine" };
 		TendouDevice device{ appWindow };
 
 		std::unique_ptr<Editor> editor;

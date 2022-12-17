@@ -64,12 +64,85 @@ namespace Tendou
 			.WriteImage(2, &texInfo2)
 			.Build(globalDescriptorSets[1]);
 
+		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
+		{
+			editorVars.ambient[i] = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+			editorVars.diffuse[i] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+			editorVars.specular[i] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		}
+
 		return 0;
 	}
 
 	int LightingScene::PreUpdate()
 	{
-		ImGui
+		if (ImGui::BeginMenu("Scene Settings"))
+		{
+			ImGui::SliderInt("No. of Lights", &editorVars.currLights, 1, 16);
+			ImGui::SliderFloat("Orbit Radius", &editorVars.sphereLineRad, 0.1f, 100.0f);
+			ImGui::Checkbox(("Enable Rotation"), &editorVars.rotateSpheres);
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Global Values"))
+		{
+			ImGui::SliderFloat("Camera Near", &editorVars.nearFar.x, 0.1f, 100.0f);
+			ImGui::SliderFloat("Camera Far", &editorVars.nearFar.y, 1.0f, 100.0f);
+
+			ImGui::ColorEdit4("Emissive", &editorVars.emissive[0]);
+
+			ImGui::SliderFloat3("Light Coefficients", &editorVars.lightCoeffs[0], 0.0f, 1.0f);
+			ImGui::SliderFloat("Att. Constant", &editorVars.attenuation.x, 0.0f, 1.0f);
+			ImGui::SliderFloat("Att. Linear", &editorVars.attenuation.y, 0.0f, 1.0f);
+			ImGui::SliderFloat("Att. Quadratic", &editorVars.attenuation.z, 0.0f, 1.0f);
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Per-Light Values"))
+		{
+			for (unsigned i = 0; i < editorVars.currLights; ++i)
+			{
+				ImGui::PushID(i);
+				std::string id = std::string(1, (char)('0' + i));
+				if (ImGui::TreeNode(id.c_str(), "Light %i", i))
+				{
+					ImGui::ColorEdit4("Ambient Color", &editorVars.ambient[i][0]);
+					ImGui::ColorEdit4("Diffuse Color", &editorVars.diffuse[i][0]);
+					ImGui::ColorEdit4("Specular Color", &editorVars.specular[i][0]);
+
+					//ImGui::Text("Light Type");
+					//{
+					//	static int temp = 0;
+					//	temp = (int)lightUBO.lightInfo[i][3];
+					//	ImGui::RadioButton("Point", &temp, 0);
+					//	ImGui::RadioButton("Directional", &temp, 1);
+					//	ImGui::RadioButton("Spotlight", &temp, 2);
+					//	lightUBO.lightInfo[i][3] = (float)temp;
+					//}
+					//
+					//if ((int)lightUBO.lightInfo[i][3] == 2)
+					//{
+					//	ImGui::Text("Phi is the OUTER angle");
+					//	ImGui::Text("Theta is the INNER angle");
+					//
+					//	ImGui::Columns(3);
+					//	ImGui::SliderFloat("Falloff", &lightUBO.lightInfo[i].z, 0.1f, 10.0f);
+					//	ImGui::NextColumn();
+					//	ImGui::SliderFloat("Theta", &lightUBO.lightInfo[i].y, 0.01f, 90.0f);
+					//	ImGui::NextColumn();
+					//	ImGui::SliderFloat("Phi", &lightUBO.lightInfo[i].x, 0.01f, 90.0f);
+					//	ImGui::Columns(1);
+					//}
+					ImGui::TreePop();
+				}
+				ImGui::PopID();
+			}
+
+			ImGui::EndMenu();
+		}
+
 		return 0;
 	}
 
@@ -81,23 +154,24 @@ namespace Tendou
 		LightsUBO lightUbo{};
 		lightUbo.eyePos = glm::vec4(c.cameraPos, 1.0f);
 
-		for (unsigned i = 0; i < 8; ++i)
+		for (unsigned i = 0; i < editorVars.currLights; ++i)
 		{
 			lightUbo.lightColor[i] = glm::vec4(1.0f);
 
-			lightUbo.ambient[i] = glm::vec4(0.5f);
-			lightUbo.diffuse[i] = glm::vec4(1.0f, glm::vec2(0.0f), 1.0f);
-			lightUbo.specular[i] = glm::vec4(0.2f, 0.8f, 0.0f, 1.0f);
+			lightUbo.ambient[i] = glm::vec4(editorVars.ambient[i], 1.0f);
+			lightUbo.diffuse[i] = glm::vec4(editorVars.diffuse[i], 1.0f);
+			lightUbo.specular[i] = glm::vec4(editorVars.specular[i], 1.0f);
 
 			// x = outer, y = inner, z = falloff, w = type
 			lightUbo.lightInfo[i] = glm::vec4(80.0f, 45.0f, 10.0f, 0.0f);
 		}
 
-		lightUbo.emissive = glm::vec4(0.0f);
-		lightUbo.globalAmbient = glm::vec4(0.0f, 0.0f, 26.0f / 255.0f, 1.0f);
-		lightUbo.coefficients = glm::vec4(1.0f);
+		lightUbo.emissive = glm::vec4(editorVars.emissive, 1.0f);
+		lightUbo.attenuation = editorVars.attenuation;
+
+		lightUbo.coefficients = glm::vec4(editorVars.lightCoeffs, 1.0f);
 		lightUbo.fogColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		lightUbo.numLights = 2;
+		lightUbo.numLights = editorVars.currLights;
 
 		// x = use gpu, y = use normals, z = uv type
 		lightUbo.modes = glm::ivec4(0, 0, 0, 0);
@@ -110,7 +184,17 @@ namespace Tendou
 			auto& obj = a.second;
 			if (obj.GetTag() == "Sphere")
 			{
-				float res = angle + (glm::pi<float>() / 2.0f) * idx;
+				if (idx >= editorVars.currLights)
+				{
+					obj.SetRender(false);
+				}
+				else
+				{
+					obj.SetRender(true);
+				}
+
+				float res = angle + (glm::pi<float>() / static_cast<float>(editorVars.currLights)) * idx;
+				obj.GetTransform().SetTranslation(glm::vec3(0.0f, 0.0f, editorVars.sphereLineRad));
 				obj.GetTransform().SetRotationAngle(res);
 				obj.GetTransform().Update(true);
 				lightUbo.lightPos[idx] = obj.GetTransform().PositionVec4();
@@ -126,17 +210,21 @@ namespace Tendou
 		WorldUBO localUBO{};
 		localUBO.proj = c.perspective();
 		localUBO.view = c.view();
-		localUBO.nearFar = glm::vec2(0.1f, 20.0f);
+		localUBO.nearFar = glm::vec2(editorVars.nearFar.x, editorVars.nearFar.y);
 		worldUBO->WriteToBuffer(&localUBO);
 		worldUBO->Flush();
 
-		
+
 		//lightUbo.lightColor[0] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		//lightUbo.lightPos[0] = glm::vec4(-2.0f, -1.0f, 1.0f, 1.0f);
 		lightUBO->WriteToBuffer(&lightUbo);
 		lightUBO->Flush();
 
-		angle += 0.01f;
+		if (editorVars.rotateSpheres)
+		{
+			angle += 0.01f;
+		}
+
 		if (angle > glm::pi<float>())
 		{
 			angle = 0.0f;
@@ -153,13 +241,13 @@ namespace Tendou
 	void LightingScene::LoadGameObjects()
 	{
 		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, Model::Type::OBJ,
-			"Materials/Models/cube2.obj");
+			"Materials/Models/smooth_vase.obj");
 
 		auto whiteFang = GameObject::CreateGameObject("Object");
 		whiteFang.SetModel(model);
 		whiteFang.GetTransform().SetTranslation(glm::vec3(0.f));
-		whiteFang.GetTransform().SetRotation(glm::vec3(0.0f, 1.0f, 0.0f));
-		whiteFang.GetTransform().SetScale(glm::vec3(1.0f));
+		whiteFang.GetTransform().SetRotation(glm::vec3(0.0f, 0.5f, 0.0f));
+		whiteFang.GetTransform().SetScale(glm::vec3(5.5f));
 
 		gameObjects.emplace(whiteFang.GetID(), std::move(whiteFang));
 
@@ -167,11 +255,11 @@ namespace Tendou
 		model = Model::CreateModelFromFile(device, Model::Type::OBJ,
 			"Materials/Models/sphere.obj", std::string(), true);
 
-		for (unsigned i = 0; i < 2; ++i)
+		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
 		{
 			auto sphere = GameObject::CreateGameObject("Sphere");
 			sphere.SetModel(model);
-			sphere.GetTransform().SetTranslation(glm::vec3(0.0f, 0.0f, 25.0f));
+			sphere.GetTransform().SetTranslation(glm::vec3(0.0f, 0.0f, editorVars.sphereLineRad));
 			sphere.GetTransform().SetRotation(glm::vec3(0.0f, 1.0f, 0.0f));
 			sphere.GetTransform().SetScale(glm::vec3(0.08f));
 

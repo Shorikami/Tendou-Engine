@@ -9,17 +9,29 @@
 #include <memory>
 #include <vector>
 
-#define CURR_LIGHTS 8
+#define MAX_LIGHTS 16
 
 namespace Tendou
 {
 	class LightingScene : public Scene
 	{
 	public:
-		struct EditorVariables
+		struct 
 		{
+			int currLights = 1;
+			float sphereLineRad = 30.0f;
+			bool rotateSpheres = true;
 
-		};
+			glm::vec2 nearFar = glm::vec2(0.1f, 20.0f);
+			glm::vec3 attenuation = glm::vec3(0.5f, 0.37f, 0.2f);
+			glm::vec3 lightCoeffs = glm::vec3(1.0f);
+			glm::vec3 emissive = glm::vec3(0.0f);
+
+			glm::vec3 ambient[16] = {};
+			glm::vec3 diffuse[16] = {};
+			glm::vec3 specular[16] = {};
+
+		} editorVars;
 
 		LightingScene(Window& window, TendouDevice& device);
 		~LightingScene() override;

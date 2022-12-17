@@ -99,11 +99,10 @@ namespace Tendou
 				}
 				ImGui::EndMenu();
 			}
-
+			activeScene->PreUpdate();
 			ImGui::EndMainMenuBar();
 		}
-
-		activeScene->PreUpdate();
+		
 		// DEMO WINDOW
 		// TODO: Remove this when you don't need it anymore
 		ImGui::ShowDemoWindow();
