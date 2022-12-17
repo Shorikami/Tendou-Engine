@@ -1,12 +1,5 @@
 #include "Editor.h"
 
-// Include ImGUI
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
-
-
-
 #include <stdexcept>
 #include <array>
 #include <cassert>
@@ -16,6 +9,7 @@ namespace Tendou
 {
 	Editor::Editor(Window& appWindow, Scene* scene, TendouDevice& device)
 		: td(device)
+		, activeScene(scene)
 	{
 		IMGUI_CHECKVERSION();
 		//1: create descriptor pool for IMGUI
@@ -103,16 +97,13 @@ namespace Tendou
 				if (ImGui::MenuItem("Test 2"))
 				{
 				}
-				if (ImGui::MenuItem("Test 3"))
-				{
-				}
-
 				ImGui::EndMenu();
 			}
 
 			ImGui::EndMainMenuBar();
 		}
 
+		activeScene->PreUpdate();
 		// DEMO WINDOW
 		// TODO: Remove this when you don't need it anymore
 		ImGui::ShowDemoWindow();

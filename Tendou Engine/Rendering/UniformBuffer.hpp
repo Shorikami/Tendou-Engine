@@ -54,7 +54,7 @@ namespace Tendou
 
 		glm::vec4 lightInfo[16] = {}; // x = inner, y = outer, z = falloff, w = type
 
-		glm::ivec4 modes = {}; // x = use gpu, y = use normals, z = UV calculation type
+		glm::vec4 modes = {}; // x = use gpu, y = use normals, z = UV calculation type
 
 		glm::vec3 attenuation = glm::vec3(0.5f, 0.37f, 0.2f); // x = c1, y = c2, z = c3
 		int numLights;

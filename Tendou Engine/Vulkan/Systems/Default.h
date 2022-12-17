@@ -21,7 +21,7 @@ namespace Tendou
 	
 	private:
 		void RenderObject(GameObject& obj, FrameInfo& f);
-		void RenderSpheres(GameObject& obj, FrameInfo& f, float angle, int idx);
+		void RenderSpheres(GameObject& obj, FrameInfo& f);
 	};
 }
 

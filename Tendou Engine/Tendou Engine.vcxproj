@@ -37,6 +37,7 @@
     <ClCompile Include="IO\Mouse.cpp" />
     <ClCompile Include="Rendering\Buffer.cpp" />
     <ClCompile Include="Rendering\Camera.cpp" />
+    <ClCompile Include="Rendering\Scenes\LightingScene.cpp" />
     <ClCompile Include="Rendering\Scenes\SimpleScene.cpp" />
     <ClCompile Include="Vulkan\Descriptor.cpp" />
     <ClCompile Include="Rendering\Model.cpp" />
@@ -68,6 +69,7 @@
     <ClInclude Include="IO\Mouse.h" />
     <ClInclude Include="Rendering\Buffer.h" />
     <ClInclude Include="Rendering\Camera.h" />
+    <ClInclude Include="Rendering\Scenes\LightingScene.h" />
     <ClInclude Include="Rendering\Scenes\SimpleScene.h" />
     <ClInclude Include="Rendering\UniformBuffer.hpp" />
     <ClInclude Include="Vulkan\Descriptor.h" />

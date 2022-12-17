@@ -20,6 +20,7 @@ namespace Tendou
 	private:
 		VkDescriptorPool imguiPool;
 		TendouDevice& td;
+		Scene* activeScene;
 	};
 }
 

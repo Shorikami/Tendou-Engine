@@ -11,6 +11,16 @@
 
 #include "../../Components/GameObject.h"
 
+// Include ImGUI
+// It's here because all scenes will have independent
+// editor options
+// TODO: When you make it closer to an actual editor,
+// have scenes pass variables to the editor so these
+// include files can be moved only to the editor
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+
 #include <cassert>
 #include <memory>
 #include <vector>

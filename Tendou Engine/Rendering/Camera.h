@@ -34,7 +34,7 @@ namespace Tendou
 
 		bool rotateCamera = false;
 
-		Camera(glm::vec3 pos = glm::vec3(0.0f));
+		Camera(glm::vec3 pos = glm::vec3(-6.0f, -1.0f, 0.0f));
 
 		void UpdateCameraDir(double dx, double dy);
 		void UpdateCameraPos(CameraDirection d, double dt);

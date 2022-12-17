@@ -56,8 +56,8 @@ namespace Tendou
 		pipelineConfig.pipelineLayout = layout;
 
 		pipeline.push_back(std::make_unique<Pipeline>(device,
-			"Materials/Shaders/SimpleShader.vert.spv",
-			"Materials/Shaders/SimpleShader.frag.spv",
+			"Materials/Shaders/Lighting.vert.spv",
+			"Materials/Shaders/Lighting.frag.spv",
 			pipelineConfig));
 
 		pipeline.push_back(std::make_unique<Pipeline>(device,
@@ -68,8 +68,7 @@ namespace Tendou
 
 	void DefaultSystem::Render(FrameInfo& frame)
 	{
-		static float angle = 0.0f;
-		int count = 0, ii = 0;
+		int count = 0;
 
 		for (auto& kv : frame.gameObjects)
 		{
@@ -90,10 +89,9 @@ namespace Tendou
 				sizeof(PushConstantData),
 				&push);
 			
-			// TODO: Move this out to a separate update loop?
 			if (obj.GetTag() == "Sphere")
 			{
-				RenderSpheres(obj, frame, angle, ii++);
+				RenderSpheres(obj, frame);
 			}
 			else
 			{
@@ -101,17 +99,12 @@ namespace Tendou
 			}
 		}
 
-		angle += 0.01f;
-		if (angle > glm::pi<float>())
-		{
-			angle = 0.0f;
-		}
+
 	}
 
 	void DefaultSystem::RenderObject(GameObject& obj, FrameInfo& f)
 	{
 		pipeline[0]->Bind(f.commandBuffer);
-		obj.GetTransform().Update();
 
 		vkCmdBindDescriptorSets(f.commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -122,13 +115,9 @@ namespace Tendou
 		obj.GetModel()->Draw(f.commandBuffer);
 	}
 
-	void DefaultSystem::RenderSpheres(GameObject& obj, FrameInfo& f, float angle, int idx)
+	void DefaultSystem::RenderSpheres(GameObject& obj, FrameInfo& f)
 	{
 		pipeline[1]->Bind(f.commandBuffer);
-
-		float res = angle + (glm::pi<float>() / 8.0f) * idx;
-		obj.GetTransform().SetRotationAngle(res);
-		obj.GetTransform().Update(true);
 
 		obj.GetModel()->Bind(f.commandBuffer);
 		obj.GetModel()->Draw(f.commandBuffer);

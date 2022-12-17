@@ -21,6 +21,9 @@ namespace Tendou
 		const glm::vec3 Scale()  { return scale; }
 		const float RotationAngle() { return angleOfRotation; }
 
+		const glm::vec3 PositionVec3();
+		const glm::vec4 PositionVec4();
+
 		void SetTranslation(glm::vec3 set) { translation = set; }
 		void SetRotation(glm::vec3 rotBy) { rotation = rotBy; }
 		void SetScale(glm::vec3 set) { scale = set; }

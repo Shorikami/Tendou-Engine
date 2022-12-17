@@ -1,8 +1,8 @@
-#include "SimpleScene.h"
+#include "LightingScene.h"
 
 namespace Tendou
 {
-	SimpleScene::SimpleScene(Window& window, TendouDevice& device)
+	LightingScene::LightingScene(Window& window, TendouDevice& device)
 		: Scene(window, device)
 	{
 		globalPool = DescriptorPool::Builder(device)
@@ -14,11 +14,11 @@ namespace Tendou
 		LoadGameObjects();
 	}
 
-	SimpleScene::~SimpleScene()
+	LightingScene::~LightingScene()
 	{
 	}
 
-	int SimpleScene::Init()
+	int LightingScene::Init()
 	{
 		worldUBO = std::make_unique<UniformBuffer<WorldUBO>>(
 			device,
@@ -67,12 +67,13 @@ namespace Tendou
 		return 0;
 	}
 
-	int SimpleScene::PreUpdate()
+	int LightingScene::PreUpdate()
 	{
+		ImGui
 		return 0;
 	}
 
-	int SimpleScene::Update()
+	int LightingScene::Update()
 	{
 		static float angle = 0.0f;
 		int idx = 0;
@@ -80,13 +81,13 @@ namespace Tendou
 		LightsUBO lightUbo{};
 		lightUbo.eyePos = glm::vec4(c.cameraPos, 1.0f);
 
-		for (unsigned i = 0; i < 1; ++i)
+		for (unsigned i = 0; i < 8; ++i)
 		{
 			lightUbo.lightColor[i] = glm::vec4(1.0f);
 
-			lightUbo.ambient[i] = glm::vec4(1.0f);
-			lightUbo.diffuse[i] = glm::vec4(glm::vec3(0.8f), 1.0f);
-			lightUbo.specular[i] = glm::vec4(glm::vec3(0.5f), 1.0f);
+			lightUbo.ambient[i] = glm::vec4(0.5f);
+			lightUbo.diffuse[i] = glm::vec4(1.0f, glm::vec2(0.0f), 1.0f);
+			lightUbo.specular[i] = glm::vec4(0.2f, 0.8f, 0.0f, 1.0f);
 
 			// x = outer, y = inner, z = falloff, w = type
 			lightUbo.lightInfo[i] = glm::vec4(80.0f, 45.0f, 10.0f, 0.0f);
@@ -96,7 +97,7 @@ namespace Tendou
 		lightUbo.globalAmbient = glm::vec4(0.0f, 0.0f, 26.0f / 255.0f, 1.0f);
 		lightUbo.coefficients = glm::vec4(1.0f);
 		lightUbo.fogColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		lightUbo.numLights = 1;
+		lightUbo.numLights = 2;
 
 		// x = use gpu, y = use normals, z = uv type
 		lightUbo.modes = glm::ivec4(0, 0, 0, 0);
@@ -109,7 +110,7 @@ namespace Tendou
 			auto& obj = a.second;
 			if (obj.GetTag() == "Sphere")
 			{
-				float res = angle + (glm::pi<float>() / 1.0f) * idx;
+				float res = angle + (glm::pi<float>() / 2.0f) * idx;
 				obj.GetTransform().SetRotationAngle(res);
 				obj.GetTransform().Update(true);
 				lightUbo.lightPos[idx] = obj.GetTransform().PositionVec4();
@@ -144,22 +145,21 @@ namespace Tendou
 		return 0;
 	}
 
-	int SimpleScene::PostUpdate()
+	int LightingScene::PostUpdate()
 	{
 		return 0;
 	}
 
-	void SimpleScene::LoadGameObjects()
+	void LightingScene::LoadGameObjects()
 	{
 		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, Model::Type::OBJ,
-			"Materials/Models/Shiroko/Mesh/Shiroko_Original_Weapon.obj",
-			"Materials/Models/Shiroko/Mesh/Texture2D/", true);
+			"Materials/Models/cube2.obj");
 
 		auto whiteFang = GameObject::CreateGameObject("Object");
 		whiteFang.SetModel(model);
 		whiteFang.GetTransform().SetTranslation(glm::vec3(0.f));
 		whiteFang.GetTransform().SetRotation(glm::vec3(0.0f, 1.0f, 0.0f));
-		whiteFang.GetTransform().SetScale(glm::vec3(3.5f));
+		whiteFang.GetTransform().SetScale(glm::vec3(1.0f));
 
 		gameObjects.emplace(whiteFang.GetID(), std::move(whiteFang));
 
@@ -167,25 +167,15 @@ namespace Tendou
 		model = Model::CreateModelFromFile(device, Model::Type::OBJ,
 			"Materials/Models/sphere.obj", std::string(), true);
 
-		for (unsigned i = 0; i < 1; ++i)
+		for (unsigned i = 0; i < 2; ++i)
 		{
 			auto sphere = GameObject::CreateGameObject("Sphere");
 			sphere.SetModel(model);
-			sphere.GetTransform().SetTranslation(glm::vec3(0.0f, 0.0f, 20.0f));
+			sphere.GetTransform().SetTranslation(glm::vec3(0.0f, 0.0f, 25.0f));
 			sphere.GetTransform().SetRotation(glm::vec3(0.0f, 1.0f, 0.0f));
 			sphere.GetTransform().SetScale(glm::vec3(0.08f));
 
 			gameObjects.emplace(sphere.GetID(), std::move(sphere));
 		}
-
-		//model = Model::CreateModelFromFile(device, Model::Type::OBJ, "Materials/Models/quad.obj");
-		//
-		//auto floor = GameObject::CreateGameObject("Floor");
-		//floor.SetModel(model);
-		//floor.GetTransform().SetTranslation(glm::vec3(0.0f, 0.5f, 0.0f));
-		//floor.GetTransform().SetScale(glm::vec3(3.5f));
-		//
-		//gameObjects.emplace(floor.GetID(), std::move(floor));
 	}
-
 }

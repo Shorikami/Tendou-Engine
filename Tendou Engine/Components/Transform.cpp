@@ -40,6 +40,20 @@ namespace Tendou
 			* glm::translate(modelMat, translation);
 	}
 
+	const glm::vec3 Transform::PositionVec3()
+	{
+		const float x = modelMat[3][0];
+		const float y = modelMat[3][1];
+		const float z = modelMat[3][2];
+
+		return glm::vec3(x, y, z);
+	}
+
+	const glm::vec4 Transform::PositionVec4()
+	{
+		return glm::vec4(PositionVec3(), 1.0f);
+	}
+
 	// Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
 	// Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)
 	// https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix

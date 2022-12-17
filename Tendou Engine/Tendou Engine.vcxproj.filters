@@ -105,6 +105,9 @@
     <ClCompile Include="Rendering\Scenes\SimpleScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Rendering\Scenes\LightingScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Application.h">
@@ -201,6 +204,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Rendering\Scenes\SimpleScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\Scenes\LightingScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
