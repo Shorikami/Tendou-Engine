@@ -8,7 +8,13 @@ namespace Tendou
 	class Texture
 	{
 	public:
+		
+		// Single textures
 		Texture(TendouDevice& device, std::string filePath = std::string());
+
+		// Cubemap
+		Texture(TendouDevice& device, std::vector<std::string> faces);
+
 		~Texture();
 
 		VkImageView TextureImageView() { return textureImageView; }
@@ -18,8 +24,10 @@ namespace Tendou
 
 	private:
 		void CreateTextureImage(std::string f);
-		void CreateTextureImageView();
-		void CreateTextureSampler();
+		void CreateCubemap(std::vector<std::string> faces);
+
+		void CreateTextureImageView(uint32_t layers = 1);
+		void CreateTextureSampler(VkFilter filter = VK_FILTER_LINEAR);
 		TendouDevice& device_;
 
 		VkImage textureImage;

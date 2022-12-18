@@ -19,6 +19,72 @@ namespace Tendou
 		CreateTextureSampler();
 	}
 
+	Texture::Texture(TendouDevice& d, std::vector<std::string> faces)
+		: device_(d)
+	{
+		assert(faces.size() == 6 && "Cubemap error: Container must have exactly 6 faces!");
+		CreateCubemap(faces);
+		CreateTextureImageView(6);
+		CreateTextureSampler(VK_FILTER_NEAREST);
+	}
+
+	void Texture::CreateCubemap(std::vector<std::string> faces)
+	{
+		int width, height, channels;
+		stbi_uc* imageBuffers[6];
+
+		for (unsigned i = 0; i < 6; ++i)
+		{
+			imageBuffers[i] = stbi_load(faces[i].c_str(), &width, &height, &channels, STBI_rgb_alpha);
+			if (!imageBuffers[i])
+			{
+				throw std::runtime_error("Failed to load cubemap face!");
+			}
+		}
+
+		VkDeviceSize layerSize = width * height * 4;
+		VkDeviceSize imageSize = layerSize * 6;
+
+		Buffer stagingBuf
+		{
+			device_,
+			imageSize,
+			1,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		};
+
+		stagingBuf.Map();
+
+		for (unsigned i = 0; i < 6; ++i)
+		{
+			stagingBuf.WriteToBuffer(imageBuffers[i], static_cast<size_t>(layerSize), layerSize * i);
+		}
+
+		stagingBuf.Unmap();
+
+		for (unsigned i = 0; i < 6; ++i)
+		{
+			stbi_image_free(imageBuffers[i]);
+		}
+		
+		// TODO: Fix pls (4/3 channels - RGBA/RGB)
+		VkFormat bitFormat = channels == 4 ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_SRGB;
+
+		device_.CreateImage(width, height, bitFormat,
+			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory, 6);
+
+		device_.TransitionImageLayout(textureImage, bitFormat,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 6);
+
+		device_.CopyBufferToImage(stagingBuf.GetBuffer(), textureImage, 
+			static_cast<uint32_t>(width), static_cast<uint32_t>(height), 6);
+
+		device_.TransitionImageLayout(textureImage, bitFormat,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 6);
+	}
+
 	Texture::~Texture()
 	{
 		vkDestroySampler(device_.Device(), textureSampler, nullptr);
@@ -50,17 +116,6 @@ namespace Tendou
 		stagingBuf.Map();
 		stagingBuf.WriteToBuffer(res, static_cast<size_t>(imageSize));
 		stagingBuf.Unmap();
-		//VkBuffer stagingBuf;
-		//VkDeviceMemory stagingBufMemory;
-		//device_.CreateBuffer(imageSize,
-		//	VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		//	VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		//	stagingBuf, stagingBufMemory);
-		//
-		//void* data;
-		//vkMapMemory(device_.Device(), stagingBufMemory, 0, imageSize, 0, &data);
-		//memcpy(data, res, static_cast<size_t>(imageSize));
-		//vkUnmapMemory(device_.Device(), stagingBufMemory);
 
 		stbi_image_free(res);
 
@@ -80,20 +135,20 @@ namespace Tendou
 		//vkFreeMemory(device_.Device(), stagingBufMemory, nullptr);
 	}
 
-	void Texture::CreateTextureImageView()
+	void Texture::CreateTextureImageView(uint32_t layers)
 	{
-		textureImageView = device_.CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+		textureImageView = device_.CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, layers);
 	}
 
-	void Texture::CreateTextureSampler()
+	void Texture::CreateTextureSampler(VkFilter filter)
 	{
 		VkPhysicalDeviceProperties properties{};
 		vkGetPhysicalDeviceProperties(device_.PhysicalDevice(), &properties);
 
 		VkSamplerCreateInfo samplerInfo{};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		samplerInfo.magFilter = filter;
+		samplerInfo.minFilter = filter;
 		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;

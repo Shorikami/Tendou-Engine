@@ -28,7 +28,7 @@ namespace Tendou
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		worldUBO->Map();
 
-		lightUBO = std::make_unique <UniformBuffer<LightsUBO>>(
+		lightUBO = std::make_unique<UniformBuffer<LightsUBO>>(
 			device,
 			sizeof(LightsUBO),
 			1,
@@ -36,32 +36,50 @@ namespace Tendou
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		lightUBO->Map();
 
+		std::string path = "Materials/Textures/skybox/skybox_";
+		std::vector<std::string> faces =
+		{
+			path + std::string("right.png"),
+			path + std::string("left.png"),
+			path + std::string("top.png"),
+			path + std::string("bottom.png"),
+			path + std::string("front.png"),
+			path + std::string("back.png"),
+		};
+
 		textures.push_back(std::make_unique<Texture>(device, "Materials/Models/Shiroko/Texture2D/Shiroko_Original_Weapon.png"));
 		textures.push_back(std::make_unique<Texture>(device, "Materials/Textures/c.png"));
+		textures.push_back(std::make_unique<Texture>(device, faces));
+
 
 		globalSetLayout = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build();
 
 		auto bufInfo = worldUBO->DescriptorInfo();
 		auto bufInfo2 = lightUBO->DescriptorInfo();
 		auto texInfo = textures[0]->DescriptorInfo();
 		auto texInfo2 = textures[1]->DescriptorInfo();
+		auto texInfo3 = textures[2]->DescriptorInfo();
 
 		globalDescriptorSets.resize(2);
 
+		// Object set
 		DescriptorWriter(*globalSetLayout, *globalPool)
 			.WriteBuffer(0, &bufInfo)
 			.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo)
 			.Build(globalDescriptorSets[0]);
 
+		// Skybox set
 		DescriptorWriter(*globalSetLayout, *globalPool)
 			.WriteBuffer(0, &bufInfo)
-			.WriteBuffer(1, &bufInfo2)
+			//.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo2)
+			.WriteImage(3, &texInfo3)
 			.Build(globalDescriptorSets[1]);
 
 		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
@@ -265,5 +283,16 @@ namespace Tendou
 
 			gameObjects.emplace(sphere.GetID(), std::move(sphere));
 		}
+
+		model = Model::CreateModelFromFile(device, Model::Type::OBJ,
+			"Materials/Models/cube.obj", std::string(), true);
+
+		auto skybox = GameObject::CreateGameObject("Skybox");
+		skybox.SetModel(model);
+		skybox.GetTransform().SetTranslation(glm::vec3(0.f));
+		//skybox.GetTransform().SetRotation(glm::vec3(0.0f, 0.5f, 0.0f));
+		skybox.GetTransform().SetScale(glm::vec3(50.0f));
+
+		gameObjects.emplace(skybox.GetID(), std::move(skybox));
 	}
 }

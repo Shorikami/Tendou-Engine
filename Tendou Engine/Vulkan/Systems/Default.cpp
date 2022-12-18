@@ -64,6 +64,11 @@ namespace Tendou
 			"Materials/Shaders/Test.vert.spv",
 			"Materials/Shaders/Test.frag.spv",
 			pipelineConfig));
+
+		pipeline.push_back(std::make_unique<Pipeline>(device,
+			"Materials/Shaders/Skybox.vert.spv",
+			"Materials/Shaders/Skybox.frag.spv",
+			pipelineConfig));
 	}
 
 	void DefaultSystem::Render(FrameInfo& frame)
@@ -88,18 +93,26 @@ namespace Tendou
 				0,
 				sizeof(PushConstantData),
 				&push);
-			
+
+			// TODO: Make this a switch statement (tagging optimizations)
 			if (obj.GetTag() == "Sphere" && obj.GetRender())
 			{
 				RenderSpheres(obj, frame);
 			}
 			else if (obj.GetTag() != "Sphere")
 			{
-				RenderObject(obj, frame);
+				//RenderObject(obj, frame);
+				if (obj.GetTag() == "Skybox")
+				{
+					RenderSkybox(obj, frame);
+				}
+				else
+				{
+					RenderObject(obj, frame);
+				}
+				
 			}
 		}
-
-
 	}
 
 	void DefaultSystem::RenderObject(GameObject& obj, FrameInfo& f)
@@ -118,6 +131,19 @@ namespace Tendou
 	void DefaultSystem::RenderSpheres(GameObject& obj, FrameInfo& f)
 	{
 		pipeline[1]->Bind(f.commandBuffer);
+
+		obj.GetModel()->Bind(f.commandBuffer);
+		obj.GetModel()->Draw(f.commandBuffer);
+	}
+
+	void DefaultSystem::RenderSkybox(GameObject& obj, FrameInfo& f)
+	{
+		pipeline[2]->Bind(f.commandBuffer);
+
+		vkCmdBindDescriptorSets(f.commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			layout, 0, 1, &f.descriptorSets[1],
+			0, nullptr);
 
 		obj.GetModel()->Bind(f.commandBuffer);
 		obj.GetModel()->Draw(f.commandBuffer);

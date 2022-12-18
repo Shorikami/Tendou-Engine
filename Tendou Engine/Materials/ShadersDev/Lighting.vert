@@ -29,7 +29,7 @@ void main()
 	vec4 viewPos = push.modelMatrix * vec4(aPos, 1.0);
 	gl_Position = worldUBO.proj * worldUBO.view * viewPos;
 	
-	fragNormalWorld = normalize(mat3(push.normalMatrix) * aNormal);
+	fragNormalWorld = mat3(transpose(inverse(push.modelMatrix))) * aNormal;
 	fragPosWorld = viewPos.xyz;
 	fragColor = aColor;
 	texCoords = aTexCoord;

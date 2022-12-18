@@ -12,17 +12,16 @@ layout(location = 3) out vec2 texCoords;
 
 layout(set = 0, binding = 0) uniform WorldUBO
 {
-  mat4 proj;
-  mat4 view;
-  vec2 nearFar;
+	mat4 proj;
+	mat4 view;
+	vec2 nearFar;
 } worldUBO;
 
 layout(push_constant) uniform Push
 {
-	mat4 modelMatrix; // projection * view * model
+	mat4 modelMatrix;
 	mat4 normalMatrix;
 } push;
-
 
 void main()
 {
