@@ -43,6 +43,11 @@ namespace Tendou
 		return -1;
 	}
 
+	int Scene::Render(VkCommandBuffer buf, DefaultSystem& test, FrameInfo& f)
+	{
+		return -1;
+	}
+
 	void Scene::CreateCommandBuffers()
 	{
 		commandBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);

@@ -7,6 +7,8 @@
 #include "../../Vulkan/Descriptor.h"
 #include "../../Vulkan/TendouDevice.h"
 
+#include "../../Vulkan/Systems/Default.h"
+
 #include "../../Rendering/Camera.h"
 
 #include "../../Components/GameObject.h"
@@ -24,6 +26,7 @@
 #include <cassert>
 #include <memory>
 #include <vector>
+#include <stdexcept>
 
 namespace Tendou
 {
@@ -40,6 +43,8 @@ namespace Tendou
 		virtual int PreUpdate();
 		virtual int Update();
 		virtual int PostUpdate();
+
+		virtual int Render(VkCommandBuffer buf, DefaultSystem& test, FrameInfo& f);
 
 		__inline bool IsFrameInProgress() const { return isFrameStarted; }
 		__inline VkRenderPass GetSwapChainRenderPass() const { return swapChain->GetRenderPass(); }
@@ -92,6 +97,7 @@ namespace Tendou
 		Window& appWindow;
 		TendouDevice& device;
 
+		std::unordered_map<std::string, VkRenderPass> renderPasses;
 		std::unique_ptr<SwapChain> swapChain;
 		std::vector<VkCommandBuffer> commandBuffers;
 

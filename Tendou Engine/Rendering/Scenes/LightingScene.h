@@ -33,6 +33,20 @@ namespace Tendou
 
 		} editorVars;
 
+		struct FrameBufferAttachment {
+			VkImage image;
+			VkDeviceMemory mem;
+			VkImageView view;
+		};
+		struct OffscreenPass {
+			int32_t width, height;
+			VkFramebuffer frameBuffer;
+			FrameBufferAttachment color, depth;
+			VkRenderPass renderPass;
+			VkSampler sampler;
+			VkDescriptorImageInfo descriptor;
+		} offscreenPass;
+
 		LightingScene(Window& window, TendouDevice& device);
 		~LightingScene() override;
 
@@ -40,6 +54,11 @@ namespace Tendou
 		int PreUpdate() override;
 		int Update() override;
 		int PostUpdate() override;
+
+		int Render(VkCommandBuffer buf, DefaultSystem& test, FrameInfo& f) override;
+
+		void CreateOffscreen();
+
 	private:
 		void LoadGameObjects();
 

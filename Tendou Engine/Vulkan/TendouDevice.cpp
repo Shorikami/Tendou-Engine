@@ -522,14 +522,15 @@ namespace Tendou
         EndSingleTimeCommands(commandBuffer);
     }
 
-    VkImageView TendouDevice::CreateImageView(VkImage image, VkFormat format, uint32_t layerCount)
+    VkImageView TendouDevice::CreateImageView(VkImage image, VkFormat format,
+        uint32_t layerCount, VkImageViewType viewType, VkImageAspectFlagBits aspectMask)
     {
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = image;
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+        viewInfo.viewType = viewType;
         viewInfo.format = format;
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.aspectMask = aspectMask;
         viewInfo.subresourceRange.baseMipLevel = 0;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = 0;

@@ -5,6 +5,7 @@ layout(location = 0) out vec4 outColor;
 layout(location = 0) in vec2 texCoords;
 layout(location = 1) in vec3 fragPos;
 
+layout(set = 0, binding = 2) uniform sampler2D tex;
 layout(set = 0, binding = 3) uniform sampler2DArray skyboxTex;
 
 vec2 CubemapUV(vec3 v, out int idx)
@@ -109,4 +110,5 @@ vec4 SampleCubemap(vec3 v)
 void main()
 {
 	outColor = SampleCubemap(fragPos);
+	//outColor = texture(tex, texCoords);
 }

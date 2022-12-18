@@ -69,8 +69,9 @@ vec3 LightCalc(int id)
 	vec3 amb = ubLights.coefficients.x * ubLights.ambient[id].xyz;
 	
 	float nDotL = max(dot(surfaceNorm, lightDir), 0.0f);
-	vec3 diff = ubLights.coefficients.y * nDotL * ubLights.diffuse[id].xyz;
-	//vec4 diff = ubLights.diffuse[id] * texture(tex, texCoords);
+	vec3 diff = texture(tex, texCoords).xyz;
+	//vec3 diff = ubLights.coefficients.y * nDotL * ubLights.diffuse[id].xyz * texture(tex, texCoords).xyz;
+	//vec3 diff = ubLights.diffuse[id].xyz * texture(tex, texCoords).xyz;
 	
 	// specular lighting (blinn)
 	vec3 viewDir = normalize(ubLights.eyePos.xyz - fragPosWorld);

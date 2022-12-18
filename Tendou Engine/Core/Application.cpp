@@ -41,6 +41,13 @@ namespace Tendou
 			scene->GetGlobalSetLayout()->GetDescriptorSetLayout()
 		};
 
+		DefaultSystem offscreenSys
+		{
+			device,
+			scene->renderPasses["Offscreen"],
+			scene->GetGlobalSetLayout()->GetDescriptorSetLayout()
+		};
+
 		auto currTime = std::chrono::high_resolution_clock::now();
 
 		do
@@ -67,8 +74,12 @@ namespace Tendou
 				// -----
 				editor.get()->Setup();
 
+				// Offscreen render test
+				scene->Render(cmdBuf, offscreenSys, f);
+
 				scene->BeginSwapChainRenderPass(cmdBuf);
 				
+				// TODO: Move these to a scene renderer function
 				defaultSys.Render(f);
 
 				// NOTE: Render the editor AFTER all render passes;

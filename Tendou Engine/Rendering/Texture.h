@@ -26,7 +26,7 @@ namespace Tendou
 		void CreateTextureImage(std::string f);
 		void CreateCubemap(std::vector<std::string> faces);
 
-		void CreateTextureImageView(uint32_t layers = 1);
+		void CreateTextureImageView(uint32_t layers = 1, VkImageViewType t = VK_IMAGE_VIEW_TYPE_2D);
 		void CreateTextureSampler(VkFilter filter = VK_FILTER_LINEAR);
 		TendouDevice& device_;
 

@@ -72,7 +72,9 @@ namespace Tendou
             VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount = 1);
 
         // Texture/Image Helper Functions
-        VkImageView CreateImageView(VkImage image, VkFormat format, uint32_t layerCount = 1);
+        VkImageView CreateImageView(VkImage image, VkFormat format, 
+            uint32_t layerCount = 1, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D,
+            VkImageAspectFlagBits aspectMask = VK_IMAGE_ASPECT_COLOR_BIT);
         void CreateImage(uint32_t width, uint32_t height,
             VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
             VkMemoryPropertyFlags properties, VkImage& image,

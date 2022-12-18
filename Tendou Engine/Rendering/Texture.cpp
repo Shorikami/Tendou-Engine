@@ -24,7 +24,7 @@ namespace Tendou
 	{
 		assert(faces.size() == 6 && "Cubemap error: Container must have exactly 6 faces!");
 		CreateCubemap(faces);
-		CreateTextureImageView(6);
+		CreateTextureImageView(6, VK_IMAGE_VIEW_TYPE_2D_ARRAY);
 		CreateTextureSampler(VK_FILTER_NEAREST);
 	}
 
@@ -135,9 +135,9 @@ namespace Tendou
 		//vkFreeMemory(device_.Device(), stagingBufMemory, nullptr);
 	}
 
-	void Texture::CreateTextureImageView(uint32_t layers)
+	void Texture::CreateTextureImageView(uint32_t layers, VkImageViewType t)
 	{
-		textureImageView = device_.CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, layers);
+		textureImageView = device_.CreateImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, layers, t);
 	}
 
 	void Texture::CreateTextureSampler(VkFilter filter)

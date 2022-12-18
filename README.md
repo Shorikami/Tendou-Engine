@@ -3,6 +3,8 @@ A custom Vulkan engine named after everyone's favorite *Blue Archive* fridge. Th
 
 ## Current Features
 - Model Loading (.obj)
-- Basic Shaders
+- Basic Lighting
 - Texture Mapping
 - Uniform Buffer Support
+- Render-to-Texture (Offscreen) methods
+- Cubemap (Skybox) Support

@@ -96,7 +96,7 @@ namespace Tendou
         return result;
     }
 
-    VkResult SwapChain::SubmitCommandBuffers (const VkCommandBuffer* buffers, uint32_t* imageIndex) 
+    VkResult SwapChain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex) 
     {
         if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE) 
         {
@@ -403,7 +403,9 @@ namespace Tendou
     {
         for (const auto& availableFormat : availableFormats) 
         {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
+            // TODO: Look into VK_FORMAT_B8G8R8A8_UNORM and VK_FORMAT_R8G8B8A8_UNORM
+            // (r and b are swapped in both formats)
+            if (availableFormat.format == VK_FORMAT_R8G8B8A8_UNORM &&
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
                 return availableFormat;
