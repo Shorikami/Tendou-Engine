@@ -38,17 +38,17 @@ namespace Tendou
 		{ 
 			device, 
 			scene->GetSwapChainRenderPass(), 
-			scene->GetGlobalSetLayout()->GetDescriptorSetLayout()
+			scene->GetSetLayout("Global")->GetDescriptorSetLayout()
 		};
 
 		DefaultSystem offscreenSys[6]
 		{
-			{ device, scene->renderPasses["Offscreen1"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen2"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen3"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen4"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen5"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen6"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()}
+			{ device, scene->renderPasses["Offscreen1"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen2"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen3"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen4"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen5"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen6"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()}
 		};
 
 		auto currTime = std::chrono::high_resolution_clock::now();
@@ -70,7 +70,7 @@ namespace Tendou
 				scene->ProcessInput(frameTime, scene->GetCamera());
 
 				FrameInfo f(frameIdx, frameTime, cmdBuf, scene->GetCamera(),
-					scene->GetGlobalDescriptorSets(), scene->GetGameObjects());
+					scene->GetDescriptorSet("Global"), scene->GetGameObjects());
 
 				std::vector<VkDescriptorSet> testSets;
 				testSets.resize(3);

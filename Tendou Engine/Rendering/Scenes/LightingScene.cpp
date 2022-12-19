@@ -6,9 +6,9 @@ namespace Tendou
 		: Scene(window, device)
 	{
 		globalPool = DescriptorPool::Builder(device)
-			.SetMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-			.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
-			.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+			.SetMaxSets(20)
+			.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20)
+			.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20)
 			.Build();
 
 		LoadGameObjects();
@@ -94,7 +94,7 @@ namespace Tendou
 		textures.push_back(std::make_unique<Texture>(device, "Materials/Textures/hoshino.png"));
 		textures.push_back(std::make_unique<Texture>(device, faces));
 
-		globalSetLayout = DescriptorSetLayout::Builder(device)
+		setLayouts["Global"] = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -111,29 +111,29 @@ namespace Tendou
 			renderPasses["Offscreen1"].descriptor.imageView,
 			renderPasses["Offscreen1"].descriptor.imageLayout };
 
-		globalDescriptorSets.resize(3);
+		descriptorSets["Global"].resize(3);
 
 		// Object set
-		DescriptorWriter(*globalSetLayout, *globalPool)
+		DescriptorWriter(*setLayouts["Global"], *globalPool)
 			.WriteBuffer(0, &bufInfo)
 			.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo4)
-			.Build(globalDescriptorSets[0]);
+			.Build(descriptorSets["Global"][0]);
 
 		// Skybox set
-		DescriptorWriter(*globalSetLayout, *globalPool)
+		DescriptorWriter(*setLayouts["Global"], *globalPool)
 			.WriteBuffer(0, &bufInfo)
 			//.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo2)
 			.WriteImage(3, &texInfo3)
-			.Build(globalDescriptorSets[1]);
+			.Build(descriptorSets["Global"][1]);
 
 		// Offscreen set
-		DescriptorWriter(*globalSetLayout, *globalPool)
+		DescriptorWriter(*setLayouts["Global"], *globalPool)
 			.WriteBuffer(0, &bufInfo)
 			.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo2)
-			.Build(globalDescriptorSets[2]);
+			.Build(descriptorSets["Global"][2]);
 
 		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
 		{

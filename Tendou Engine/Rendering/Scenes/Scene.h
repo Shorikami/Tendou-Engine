@@ -64,20 +64,20 @@ namespace Tendou
 		}
 
 		DescriptorPool* GetGlobalPool() { return globalPool.get(); }
-		DescriptorSetLayout* GetGlobalSetLayout() { return globalSetLayout.get(); }
+		DescriptorSetLayout* GetSetLayout(std::string key) { return setLayouts[key].get(); }
 
 		GameObject::Map& GetGameObjects() { return gameObjects; }
 		Camera& GetCamera() { return c; }
 
-		std::vector<VkDescriptorSet> GetGlobalDescriptorSets() { return globalDescriptorSets; }
+		std::vector<VkDescriptorSet> GetDescriptorSet(std::string key) { return descriptorSets[key]; }
 
-		VkDescriptorSet GetDescriptorSet(int idx = 0)
+		VkDescriptorSet GetDescriptorSet(int idx, std::string key)
 		{
-			if (idx >= globalDescriptorSets.size())
+			if (idx >= descriptorSets[key].size())
 			{
 				return nullptr;
 			}
-			return globalDescriptorSets[idx];
+			return descriptorSets[key][idx];
 		}
 
 		VkCommandBuffer BeginFrame();
@@ -109,8 +109,8 @@ namespace Tendou
 		int currFrameIdx = 0;
 		bool isFrameStarted = false;
 
-		std::unique_ptr<DescriptorSetLayout> globalSetLayout;
-		std::vector<VkDescriptorSet> globalDescriptorSets;
+		std::unordered_map<std::string, std::unique_ptr<DescriptorSetLayout>> setLayouts;
+		std::unordered_map<std::string, std::vector<VkDescriptorSet>> descriptorSets;
 
 		// Note: order of declarations matters - need the global pool to be destroyed
 		// before the device

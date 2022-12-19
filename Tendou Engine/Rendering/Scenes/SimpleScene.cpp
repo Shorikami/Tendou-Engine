@@ -39,7 +39,7 @@ namespace Tendou
 		textures.push_back(std::make_unique<Texture>(device, "Materials/Models/Shiroko/Texture2D/Shiroko_Original_Weapon.png"));
 		textures.push_back(std::make_unique<Texture>(device, "Materials/Textures/c.png"));
 
-		globalSetLayout = DescriptorSetLayout::Builder(device)
+		setLayouts["Global"] = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -50,19 +50,19 @@ namespace Tendou
 		auto texInfo = textures[0]->DescriptorInfo();
 		auto texInfo2 = textures[1]->DescriptorInfo();
 
-		globalDescriptorSets.resize(2);
+		descriptorSets["Global"].resize(2);
 
-		DescriptorWriter(*globalSetLayout, *globalPool)
+		DescriptorWriter(*setLayouts["Global"], *globalPool)
 			.WriteBuffer(0, &bufInfo)
 			.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo)
-			.Build(globalDescriptorSets[0]);
+			.Build(descriptorSets["Global"][0]);
 
-		DescriptorWriter(*globalSetLayout, *globalPool)
+		DescriptorWriter(*setLayouts["Global"], *globalPool)
 			.WriteBuffer(0, &bufInfo)
 			.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo2)
-			.Build(globalDescriptorSets[1]);
+			.Build(descriptorSets["Global"][1]);
 
 		return 0;
 	}
