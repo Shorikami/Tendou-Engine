@@ -69,7 +69,7 @@ namespace Tendou
 		GameObject::Map& GetGameObjects() { return gameObjects; }
 		Camera& GetCamera() { return c; }
 
-		std::vector<VkDescriptorSet> GetDescriptorSets() { return globalDescriptorSets; }
+		std::vector<VkDescriptorSet> GetGlobalDescriptorSets() { return globalDescriptorSets; }
 
 		VkDescriptorSet GetDescriptorSet(int idx = 0)
 		{
@@ -86,6 +86,9 @@ namespace Tendou
 		void ProcessInput(float dt, Camera& c);
 		void ProcessMouse(float x, float y, Camera& c);
 
+		void BeginRenderPass(VkCommandBuffer cmdBuf, std::string key);
+		void EndRenderPass(VkCommandBuffer cmdBuf);
+
 		void BeginSwapChainRenderPass(VkCommandBuffer cmdBuf);
 		void EndSwapChainRenderPass(VkCommandBuffer cmdBuf);
 
@@ -97,7 +100,8 @@ namespace Tendou
 		Window& appWindow;
 		TendouDevice& device;
 
-		std::unordered_map<std::string, VkRenderPass> renderPasses;
+		std::unordered_map<std::string, Tendou::RenderPass> renderPasses;
+
 		std::unique_ptr<SwapChain> swapChain;
 		std::vector<VkCommandBuffer> commandBuffers;
 

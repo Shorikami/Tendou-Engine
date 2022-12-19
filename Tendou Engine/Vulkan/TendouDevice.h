@@ -26,6 +26,23 @@ namespace Tendou
         bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
     };
 
+    struct FrameBufferAttachment 
+    {
+        VkImage image;
+        VkDeviceMemory memory;
+        VkImageView view;
+    };
+
+    struct RenderPass
+    {
+        int32_t width, height;
+        VkFramebuffer frameBuffer;
+        FrameBufferAttachment color, depth;
+        VkRenderPass renderPass;
+        VkSampler sampler;
+        VkDescriptorImageInfo descriptor;
+    };
+
     class TendouDevice
     {
     public:
@@ -70,6 +87,9 @@ namespace Tendou
         void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         void CopyBufferToImage(
             VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount = 1);
+
+        // Render Pass Helper Functions
+        RenderPass CreateRenderPass(int width, int height);
 
         // Texture/Image Helper Functions
         VkImageView CreateImageView(VkImage image, VkFormat format, 

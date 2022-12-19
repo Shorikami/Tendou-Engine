@@ -12,4 +12,19 @@ namespace Tendou
 	{
 		vkDestroyPipelineLayout(device.Device(), layout, nullptr);
 	}
+
+	void RenderSystem::Render(FrameInfo& frame)
+	{
+		return;
+	}
+
+	void RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout v)
+	{
+		return;
+	}
+
+	void RenderSystem::CreatePipeline(VkRenderPass pass)
+	{
+		return;
+	}
 }

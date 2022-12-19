@@ -23,11 +23,11 @@ namespace Tendou
 		RenderSystem(const RenderSystem&) = delete;
 		RenderSystem& operator=(const RenderSystem&) = delete;
 
-		virtual void Render(FrameInfo& frame) = 0;
+		virtual void Render(FrameInfo& frame);
 
 	protected:
-		virtual void CreatePipelineLayout(VkDescriptorSetLayout v) = 0;
-		virtual void CreatePipeline(VkRenderPass pass) = 0;
+		virtual void CreatePipelineLayout(VkDescriptorSetLayout v);
+		virtual void CreatePipeline(VkRenderPass pass);
 
 		TendouDevice& device;
 		std::vector<std::unique_ptr<Pipeline>> pipeline;

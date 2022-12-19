@@ -44,7 +44,7 @@ namespace Tendou
 		DefaultSystem offscreenSys
 		{
 			device,
-			scene->renderPasses["Offscreen"],
+			scene->renderPasses["Offscreen"].renderPass,
 			scene->GetGlobalSetLayout()->GetDescriptorSetLayout()
 		};
 
@@ -68,25 +68,37 @@ namespace Tendou
 				scene->Update();
 
 				FrameInfo f(frameIdx, frameTime, cmdBuf, scene->GetCamera(),
-					scene->GetDescriptorSets(), scene->GetGameObjects());
+					scene->GetGlobalDescriptorSets(), scene->GetGameObjects());
+
+				std::vector<VkDescriptorSet> testSets;
+				testSets.resize(3);
+				
+				testSets[0] = f.descriptorSets[2];
+				testSets[1] = f.descriptorSets[1];
+				testSets[2] = f.descriptorSets[0];
+
+				FrameInfo g(frameIdx, frameTime, cmdBuf, scene->GetCamera(),
+					testSets, scene->GetGameObjects());
 
 				//render
+				// TODO: Move render pass calls to a scene renderer function
 				// -----
 				editor.get()->Setup();
 
 				// Offscreen render test
-				scene->Render(cmdBuf, offscreenSys, f);
+				scene->BeginRenderPass(cmdBuf, "Offscreen");
+				offscreenSys.Render(g);
+				scene->EndRenderPass(cmdBuf);
+
 
 				scene->BeginSwapChainRenderPass(cmdBuf);
-				
-				// TODO: Move these to a scene renderer function
 				defaultSys.Render(f);
-
+				
 				// NOTE: Render the editor AFTER all render passes;
 				// rendering the editor first draws it behind objects
 				editor.get()->Draw(cmdBuf);
-
 				scene->EndSwapChainRenderPass(cmdBuf);
+				
 				scene->EndFrame();
 			}
 		} 
