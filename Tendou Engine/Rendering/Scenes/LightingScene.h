@@ -33,8 +33,6 @@ namespace Tendou
 
 		} editorVars;
 
-
-
 		LightingScene(Window& window, TendouDevice& device);
 		~LightingScene() override;
 

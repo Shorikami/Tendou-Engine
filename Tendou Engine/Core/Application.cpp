@@ -41,11 +41,14 @@ namespace Tendou
 			scene->GetGlobalSetLayout()->GetDescriptorSetLayout()
 		};
 
-		DefaultSystem offscreenSys
+		DefaultSystem offscreenSys[6]
 		{
-			device,
-			scene->renderPasses["Offscreen"].renderPass,
-			scene->GetGlobalSetLayout()->GetDescriptorSetLayout()
+			{ device, scene->renderPasses["Offscreen1"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen2"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen3"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen4"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen5"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen6"].renderPass, scene->GetGlobalSetLayout()->GetDescriptorSetLayout()}
 		};
 
 		auto currTime = std::chrono::high_resolution_clock::now();
@@ -65,7 +68,6 @@ namespace Tendou
 				// update
 				// -----
 				scene->ProcessInput(frameTime, scene->GetCamera());
-				scene->Update();
 
 				FrameInfo f(frameIdx, frameTime, cmdBuf, scene->GetCamera(),
 					scene->GetGlobalDescriptorSets(), scene->GetGameObjects());
@@ -85,11 +87,35 @@ namespace Tendou
 				// -----
 				editor.get()->Setup();
 
-				// Offscreen render test
-				scene->BeginRenderPass(cmdBuf, "Offscreen");
-				offscreenSys.Render(g);
-				scene->EndRenderPass(cmdBuf);
+				static glm::vec3 directionLookup[] =
+				{
+						{1.f, 0.f, 0.f},  // +x
+						{-1.f, 0.f, 0.f}, // -x
+						{0.f, 1.0f, 0.f}, // +y
+						{0.f, -1.0f, 0.f},// -y
+						{0.f, 0.f, 1.0f}, // +z
+						{0.f, 0.f, -1.0f} // -z
+				};
+				static glm::vec3 upLookup[] =
+				{
+						{0.f, -1.0f, 0.f},   // +x
+						{0.f, -1.0f, 0.f},   // -x
+						{0.f, 0.0f, 1.f},	// +y
+						{0.f, 0.0f, -1.f},   // -y
+						{0.f, -1.0f, 0.f},   // +z
+						{0.f, -1.0f, 0.f}    // -z
+				};
 
+				// Offscreen render test
+				for (int i = 0; i < 6; ++i)
+				{
+					scene->BeginRenderPass(cmdBuf, std::string("Offscreen") + std::to_string(i + 1));
+					glm::vec3 objPos = g.gameObjects.find(0)->second.GetTransform().PositionVec3();
+					offscreenSys[i].Render(g);
+					scene->EndRenderPass(cmdBuf);
+				}
+
+				scene->Update();
 
 				scene->BeginSwapChainRenderPass(cmdBuf);
 				defaultSys.Render(f);

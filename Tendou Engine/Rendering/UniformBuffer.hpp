@@ -26,6 +26,12 @@ namespace Tendou
 		T data;
 	};
 
+	class RenderUBO
+	{
+	public:
+		glm::mat4 view = glm::mat4(1.0f);
+	};
+
 	class WorldUBO
 	{
 	public:

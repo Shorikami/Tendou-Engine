@@ -13,7 +13,27 @@ namespace Tendou
 
 		LoadGameObjects();
 		
-		renderPasses["Offscreen"] = device.CreateRenderPass(
+		renderPasses["Offscreen1"] = device.CreateRenderPass(
+			swapChain.get()->GetSwapChainExtent().width,
+			swapChain.get()->GetSwapChainExtent().height);
+
+		renderPasses["Offscreen2"] = device.CreateRenderPass(
+			swapChain.get()->GetSwapChainExtent().width,
+			swapChain.get()->GetSwapChainExtent().height);
+
+		renderPasses["Offscreen3"] = device.CreateRenderPass(
+			swapChain.get()->GetSwapChainExtent().width,
+			swapChain.get()->GetSwapChainExtent().height);
+
+		renderPasses["Offscreen4"] = device.CreateRenderPass(
+			swapChain.get()->GetSwapChainExtent().width,
+			swapChain.get()->GetSwapChainExtent().height);
+
+		renderPasses["Offscreen5"] = device.CreateRenderPass(
+			swapChain.get()->GetSwapChainExtent().width,
+			swapChain.get()->GetSwapChainExtent().height);
+
+		renderPasses["Offscreen6"] = device.CreateRenderPass(
 			swapChain.get()->GetSwapChainExtent().width,
 			swapChain.get()->GetSwapChainExtent().height);
 	}
@@ -22,20 +42,23 @@ namespace Tendou
 	LightingScene::~LightingScene()
 	{
 		// Frame buffer
+		for (int i = 0; i < 6; ++i)
+		{
+			std::string key = std::string("Offscreen") + std::to_string(i + 1);
+			// Color attachment
+			vkDestroyImageView(device.Device(), renderPasses[key].color.view, nullptr);
+			vkDestroyImage(device.Device(), renderPasses[key].color.image, nullptr);
+			vkFreeMemory(device.Device(), renderPasses[key].color.memory, nullptr);
 
-		// Color attachment
-		vkDestroyImageView(device.Device(), renderPasses["Offscreen"].color.view, nullptr);
-		vkDestroyImage(device.Device(), renderPasses["Offscreen"].color.image, nullptr);
-		vkFreeMemory(device.Device(), renderPasses["Offscreen"].color.memory, nullptr);
+			// Depth attachment
+			vkDestroyImageView(device.Device(), renderPasses[key].depth.view, nullptr);
+			vkDestroyImage(device.Device(), renderPasses[key].depth.image, nullptr);
+			vkFreeMemory(device.Device(), renderPasses[key].depth.memory, nullptr);
 
-		// Depth attachment
-		vkDestroyImageView(device.Device(), renderPasses["Offscreen"].depth.view, nullptr);
-		vkDestroyImage(device.Device(), renderPasses["Offscreen"].depth.image, nullptr);
-		vkFreeMemory(device.Device(), renderPasses["Offscreen"].depth.memory, nullptr);
-
-		vkDestroyRenderPass(device.Device(), renderPasses["Offscreen"].renderPass, nullptr);
-		vkDestroySampler(device.Device(), renderPasses["Offscreen"].sampler, nullptr);
-		vkDestroyFramebuffer(device.Device(), renderPasses["Offscreen"].frameBuffer, nullptr);
+			vkDestroyRenderPass(device.Device(), renderPasses[key].renderPass, nullptr);
+			vkDestroySampler(device.Device(), renderPasses[key].sampler, nullptr);
+			vkDestroyFramebuffer(device.Device(), renderPasses[key].frameBuffer, nullptr);
+		}
 	}
 
 	int LightingScene::Init()
@@ -84,9 +107,9 @@ namespace Tendou
 		auto texInfo2 = textures[1]->DescriptorInfo();
 		auto texInfo3 = textures[2]->DescriptorInfo();
 		auto texInfo4 = VkDescriptorImageInfo{
-			renderPasses["Offscreen"].descriptor.sampler, 
-			renderPasses["Offscreen"].descriptor.imageView,
-			renderPasses["Offscreen"].descriptor.imageLayout };
+			renderPasses["Offscreen1"].descriptor.sampler, 
+			renderPasses["Offscreen1"].descriptor.imageView,
+			renderPasses["Offscreen1"].descriptor.imageLayout };
 
 		globalDescriptorSets.resize(3);
 
@@ -238,7 +261,6 @@ namespace Tendou
 		localUBO.nearFar = glm::vec2(editorVars.nearFar.x, editorVars.nearFar.y);
 		worldUBO->WriteToBuffer(&localUBO);
 		worldUBO->Flush();
-
 
 		//lightUbo.lightColor[0] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		//lightUbo.lightPos[0] = glm::vec4(-2.0f, -1.0f, 1.0f, 1.0f);
