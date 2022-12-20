@@ -15,6 +15,11 @@ layout(set = 0, binding = 0) uniform WorldUBO
 	mat4 view;
 } worldUBO;
 
+layout(set = 0, binding = 5) uniform RenderUBO
+{
+	mat4 view;
+} captureUBO;
+
 layout(push_constant) uniform Push
 {
 	mat4 modelMatrix; // projection * view * model
@@ -25,7 +30,7 @@ layout(push_constant) uniform Push
 void main()
 {
 	vec4 viewPos = push.modelMatrix * vec4(aPos, 1.0);
-	gl_Position = worldUBO.proj * worldUBO.view * viewPos;
+	gl_Position = worldUBO.proj * captureUBO.view * viewPos;
 	
 	fragNormalWorld = normalize(mat3(push.normalMatrix) * aNormal);
 	fragPosWorld = viewPos.xyz;

@@ -26,12 +26,19 @@ namespace Tendou
 		virtual void Render(FrameInfo& frame);
 
 	protected:
+		// TODO: remove once you're done testing
+		friend class Application;
+
 		virtual void CreatePipelineLayout(VkDescriptorSetLayout v);
 		virtual void CreatePipeline(VkRenderPass pass);
 
 		TendouDevice& device;
 		std::vector<std::unique_ptr<Pipeline>> pipeline;
 		VkPipelineLayout layout;
+
+	private:
+		// TODO: remove once you're done testing
+		friend class Application;
 	};
 }
 

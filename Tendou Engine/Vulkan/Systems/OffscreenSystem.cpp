@@ -69,11 +69,11 @@ namespace Tendou
 	void OffscreenSystem::Render(FrameInfo& frame)
 	{
 		int count = 0;
-
 		vkCmdBindDescriptorSets(frame.commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			layout, 0, 1, &frame.descriptorSets[0],
-			0, nullptr);
+			1, &frame.dynamicOffset);
+
 
 		for (auto& kv : frame.gameObjects)
 		{
@@ -87,6 +87,8 @@ namespace Tendou
 			push.modelMatrix = obj.GetTransform().ModelMat();
 			push.normalMatrix = obj.GetTransform().NormalMatrix();
 
+			// NOTE: RenderDoc push constant calls are coming from
+			// the unrenderable lights
 			vkCmdPushConstants(frame.commandBuffer,
 				layout,
 				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,

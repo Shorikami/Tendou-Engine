@@ -80,6 +80,20 @@ namespace Tendou
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		lightUBO->Map();
 
+		captureUBO = std::make_unique<UniformBuffer<RenderUBO>>(
+			device,
+			sizeof(glm::mat4),
+			6,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			device.properties.limits.minUniformBufferOffsetAlignment
+		);
+		captureUBO->Map();
+		captureUBO->GetData().view = (glm::mat4*)captureUBO->AlignedAlloc(captureUBO->GetBufferSize(), captureUBO->GetAlignmentSize());
+		assert(captureUBO->GetData().view && "Failed to allocate capture UBO view!");
+
+		testOffset = captureUBO->GetAlignmentSize();
+
 		std::string path = "Materials/Textures/skybox/skybox_";
 		std::vector<std::string> faces =
 		{
@@ -100,16 +114,19 @@ namespace Tendou
 			.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.AddBinding(5, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
 			.Build();
 
 		setLayouts["Offscreen"] = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-			.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(5, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
 			.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build();
-
+		
 		auto worldBuf = worldUBO->DescriptorInfo();
 		auto lightBuf = lightUBO->DescriptorInfo();
+		auto captureBuf = captureUBO->DescriptorInfo();
+		captureBuf.range = captureUBO->GetAlignmentSize();
 
 		auto texInfo = textures[0]->DescriptorInfo();
 		auto texInfo2 = textures[1]->DescriptorInfo();
@@ -146,7 +163,7 @@ namespace Tendou
 
 		DescriptorWriter(*setLayouts["Offscreen"], *globalPool)
 			.WriteBuffer(0, &worldBuf)
-			.WriteBuffer(1, &lightBuf)
+			.WriteBuffer(5, &captureBuf)
 			.WriteImage(3, &texInfo3)
 			.Build(descriptorSets["Offscreen"][0]);
 
@@ -302,12 +319,10 @@ namespace Tendou
 
 	void LightingScene::OverwriteWorldUBO(glm::mat4 view, int i)
 	{
-		WorldUBO localUBO{};
-		localUBO.proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 1000.0f);
-		localUBO.view = glm::mat4(0.0f + i);
-		localUBO.nearFar = glm::vec2(editorVars.nearFar.x, editorVars.nearFar.y);
-		worldUBO->WriteToBuffer(&localUBO);
-		worldUBO->Flush();
+		glm::mat4* viewMat = dynamic_cast<UniformBuffer<RenderUBO>*>(captureUBO.get())->GetData().view;
+		*viewMat = view;
+		captureUBO->WriteToBuffer(viewMat, sizeof(glm::mat4), captureUBO->GetAlignmentSize() * i);
+		captureUBO->Flush();
 	}
 
 	void LightingScene::LoadGameObjects()

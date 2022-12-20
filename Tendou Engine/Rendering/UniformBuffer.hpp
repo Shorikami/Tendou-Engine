@@ -59,7 +59,6 @@ namespace Tendou
 	class RenderUBO
 	{
 	public:
-		glm::mat4 proj = glm::mat4(1.0f);
 		glm::mat4* view = nullptr;
 	};
 

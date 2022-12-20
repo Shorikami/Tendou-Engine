@@ -15,6 +15,8 @@ namespace Tendou
 
 		void Render(FrameInfo& frame) override;
 
+		uint32_t offset;
+
 	protected:
 		void CreatePipelineLayout(VkDescriptorSetLayout v) override;
 		void CreatePipeline(VkRenderPass pass) override;

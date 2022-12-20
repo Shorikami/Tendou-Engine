@@ -106,17 +106,24 @@ namespace Tendou
 				{
 					scene->BeginRenderPass(cmdBuf, std::string("Offscreen") + std::to_string(i + 1));
 					glm::vec3 objPos = g.gameObjects.find(0)->second.GetTransform().PositionVec3();
+					g.dynamicOffset = dynamic_cast<LightingScene*>(scene.get())->testOffset * i;
+					//offscreenSys[i].offset = i * static_cast<uint32_t>();
+					//
+					//vkCmdBindDescriptorSets(f.commandBuffer,
+					//	VK_PIPELINE_BIND_POINT_GRAPHICS,
+					//	offscreenSys[i].layout, 0, 1, &f.descriptorSets[0],
+					//	0, nullptr);
 
-					//dynamic_cast<LightingScene*>(scene.get())->
-					//	OverwriteWorldUBO(glm::lookAt(
-					//		objPos, directionLookup[i], -upLookup[i]), i);
+					dynamic_cast<LightingScene*>(scene.get())->
+						OverwriteWorldUBO(glm::lookAt(
+							objPos, directionLookup[i], -upLookup[i]), i);
 					
 					offscreenSys[i].Render(g);
 					scene->EndRenderPass(cmdBuf);
 				}
 
 				scene->BeginSwapChainRenderPass(cmdBuf);
-				defaultSys.Render(f);
+				//defaultSys.Render(f);
 				
 				// NOTE: Render the editor AFTER all render passes;
 				// rendering the editor first draws it behind objects

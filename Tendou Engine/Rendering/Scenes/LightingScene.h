@@ -42,6 +42,7 @@ namespace Tendou
 		int PostUpdate() override;
 
 		void OverwriteWorldUBO(glm::mat4 view, int i);
+		size_t testOffset;
 
 		//int Render(VkCommandBuffer buf, DefaultSystem& test, FrameInfo& f) override;
 
