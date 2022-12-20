@@ -41,6 +41,8 @@ namespace Tendou
 		int Update() override;
 		int PostUpdate() override;
 
+		void OverwriteWorldUBO(glm::mat4 view, int i);
+
 		//int Render(VkCommandBuffer buf, DefaultSystem& test, FrameInfo& f) override;
 
 	private:
@@ -48,6 +50,7 @@ namespace Tendou
 
 		std::unique_ptr<UniformBuffer<WorldUBO>> worldUBO;
 		std::unique_ptr<UniformBuffer<LightsUBO>> lightUBO;
+		std::unique_ptr<UniformBuffer<RenderUBO>> captureUBO;
 		std::vector<std::unique_ptr<Texture>> textures;
 	};
 }

@@ -2,6 +2,7 @@
 #include "../Editor/Editor.h"
 
 #include "../Vulkan/Systems/Default.h"
+#include "../Vulkan/Systems/OffscreenSystem.h"
 
 #include "../Rendering/Texture.h"
 
@@ -41,14 +42,14 @@ namespace Tendou
 			scene->GetSetLayout("Global")->GetDescriptorSetLayout()
 		};
 
-		DefaultSystem offscreenSys[6]
+		OffscreenSystem offscreenSys[6]
 		{
-			{ device, scene->renderPasses["Offscreen1"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen2"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen3"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen4"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen5"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()},
-			{ device, scene->renderPasses["Offscreen6"].renderPass, scene->GetSetLayout("Global")->GetDescriptorSetLayout()}
+			{ device, scene->renderPasses["Offscreen1"].renderPass, scene->GetSetLayout("Offscreen")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen2"].renderPass, scene->GetSetLayout("Offscreen")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen3"].renderPass, scene->GetSetLayout("Offscreen")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen4"].renderPass, scene->GetSetLayout("Offscreen")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen5"].renderPass, scene->GetSetLayout("Offscreen")->GetDescriptorSetLayout()},
+			{ device, scene->renderPasses["Offscreen6"].renderPass, scene->GetSetLayout("Offscreen")->GetDescriptorSetLayout()}
 		};
 
 		auto currTime = std::chrono::high_resolution_clock::now();
@@ -68,19 +69,13 @@ namespace Tendou
 				// update
 				// -----
 				scene->ProcessInput(frameTime, scene->GetCamera());
+				scene->Update();
 
 				FrameInfo f(frameIdx, frameTime, cmdBuf, scene->GetCamera(),
 					scene->GetDescriptorSet("Global"), scene->GetGameObjects());
 
-				std::vector<VkDescriptorSet> testSets;
-				testSets.resize(3);
-				
-				testSets[0] = f.descriptorSets[2];
-				testSets[1] = f.descriptorSets[1];
-				testSets[2] = f.descriptorSets[0];
-
 				FrameInfo g(frameIdx, frameTime, cmdBuf, scene->GetCamera(),
-					testSets, scene->GetGameObjects());
+					scene->GetDescriptorSet("Offscreen"), scene->GetGameObjects());
 
 				//render
 				// TODO: Move render pass calls to a scene renderer function
@@ -111,11 +106,14 @@ namespace Tendou
 				{
 					scene->BeginRenderPass(cmdBuf, std::string("Offscreen") + std::to_string(i + 1));
 					glm::vec3 objPos = g.gameObjects.find(0)->second.GetTransform().PositionVec3();
+
+					//dynamic_cast<LightingScene*>(scene.get())->
+					//	OverwriteWorldUBO(glm::lookAt(
+					//		objPos, directionLookup[i], -upLookup[i]), i);
+					
 					offscreenSys[i].Render(g);
 					scene->EndRenderPass(cmdBuf);
 				}
-
-				scene->Update();
 
 				scene->BeginSwapChainRenderPass(cmdBuf);
 				defaultSys.Render(f);

@@ -16,10 +16,10 @@ namespace Tendou
 		using id_t = unsigned int;
 		using Map = std::unordered_map<id_t, GameObject>;
 
-		static GameObject CreateGameObject(std::string tag = std::string())
+		static GameObject CreateGameObject(std::string tag = std::string(), std::string name = std::string())
 		{
 			static id_t currId = 0;
-			return GameObject(currId++, tag);
+			return GameObject(currId++, tag, name);
 		}
 
 		GameObject(const GameObject&) = delete;
@@ -28,13 +28,17 @@ namespace Tendou
 		GameObject& operator=(GameObject&&) = default;
 
 		id_t GetID() { return m_ID; }
+
+		std::string GetName() { return m_Name; }
 		std::string GetTag() { return m_Tag; }
+
 		bool GetRender() { return render; }
 
 		std::shared_ptr<Model> GetModel() { return model; }
 		Transform& GetTransform() { return m_Transform; }
 
 
+		void SetName(std::string t) { m_Name = t; }
 		void SetTag(std::string t) { m_Tag = t; }
 		void SetRender(bool b) { render = b; }
 
@@ -44,14 +48,18 @@ namespace Tendou
 		
 
 	private:
-		GameObject(id_t objId, std::string tag)
+		GameObject(id_t objId, std::string tag, std::string name)
 			: m_ID(objId)
 			, m_Tag(tag)
+			, m_Name(name)
 		{
 		}
 
 		id_t m_ID;
+
+		std::string m_Name;
 		std::string m_Tag;
+
 		bool render = true;
 
 		std::shared_ptr<Model> model{};

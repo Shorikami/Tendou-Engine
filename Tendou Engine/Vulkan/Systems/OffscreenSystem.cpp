@@ -1,4 +1,4 @@
-#include "Default.h"
+#include "OffscreenSystem.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -17,14 +17,14 @@ namespace Tendou
 		glm::mat4 normalMatrix{ 1.0f };
 	};
 
-	DefaultSystem::DefaultSystem(TendouDevice& device, VkRenderPass pass, VkDescriptorSetLayout set)
+	OffscreenSystem::OffscreenSystem(TendouDevice& device, VkRenderPass pass, VkDescriptorSetLayout set)
 		: RenderSystem(device)
 	{
 		CreatePipelineLayout(set);
 		CreatePipeline(pass);
 	}
 
-	void DefaultSystem::CreatePipelineLayout(VkDescriptorSetLayout v)
+	void OffscreenSystem::CreatePipelineLayout(VkDescriptorSetLayout v)
 	{
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -46,7 +46,7 @@ namespace Tendou
 		}
 	}
 
-	void DefaultSystem::CreatePipeline(VkRenderPass pass)
+	void OffscreenSystem::CreatePipeline(VkRenderPass pass)
 	{
 		assert(layout != nullptr && "Cannot create pipeline before layout!");
 
@@ -54,11 +54,6 @@ namespace Tendou
 		Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
 		pipelineConfig.renderPass = pass;
 		pipelineConfig.pipelineLayout = layout;
-
-		pipeline.push_back(std::make_unique<Pipeline>(device,
-			"Materials/Shaders/Lighting.vert.spv",
-			"Materials/Shaders/Lighting.frag.spv",
-			pipelineConfig));
 
 		pipeline.push_back(std::make_unique<Pipeline>(device,
 			"Materials/Shaders/Test.vert.spv",
@@ -71,9 +66,14 @@ namespace Tendou
 			pipelineConfig));
 	}
 
-	void DefaultSystem::Render(FrameInfo& frame)
+	void OffscreenSystem::Render(FrameInfo& frame)
 	{
 		int count = 0;
+
+		vkCmdBindDescriptorSets(frame.commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			layout, 0, 1, &frame.descriptorSets[0],
+			0, nullptr);
 
 		for (auto& kv : frame.gameObjects)
 		{
@@ -95,55 +95,30 @@ namespace Tendou
 				&push);
 
 			// TODO: Make this a switch statement (tagging optimizations)
+			// NOTE: Do not render the object from which we are doing
+			// dynamic reflections
 			if (obj.GetTag() == "Light" && obj.GetRender())
 			{
 				RenderSpheres(obj, frame);
 			}
-			else if (obj.GetTag() != "Light")
+			else if (obj.GetTag() == "Skybox")
 			{
-				//RenderObject(obj, frame);
-				if (obj.GetTag() == "Skybox")
-				{
-					RenderSkybox(obj, frame);
-				}
-				else
-				{
-					RenderObject(obj, frame);
-				}
-				
+				RenderSkybox(obj, frame);
 			}
 		}
 	}
 
-	void DefaultSystem::RenderObject(GameObject& obj, FrameInfo& f)
+	void OffscreenSystem::RenderSpheres(GameObject& obj, FrameInfo& f)
 	{
 		pipeline[0]->Bind(f.commandBuffer);
 
-		vkCmdBindDescriptorSets(f.commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			layout, 0, 1, &f.descriptorSets[0],
-			0, nullptr);
-
 		obj.GetModel()->Bind(f.commandBuffer);
 		obj.GetModel()->Draw(f.commandBuffer);
 	}
 
-	void DefaultSystem::RenderSpheres(GameObject& obj, FrameInfo& f)
+	void OffscreenSystem::RenderSkybox(GameObject& obj, FrameInfo& f)
 	{
 		pipeline[1]->Bind(f.commandBuffer);
-
-		obj.GetModel()->Bind(f.commandBuffer);
-		obj.GetModel()->Draw(f.commandBuffer);
-	}
-
-	void DefaultSystem::RenderSkybox(GameObject& obj, FrameInfo& f)
-	{
-		pipeline[2]->Bind(f.commandBuffer);
-
-		vkCmdBindDescriptorSets(f.commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			layout, 0, 1, &f.descriptorSets[1],
-			0, nullptr);
 
 		obj.GetModel()->Bind(f.commandBuffer);
 		obj.GetModel()->Draw(f.commandBuffer);

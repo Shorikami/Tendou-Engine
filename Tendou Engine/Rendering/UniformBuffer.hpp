@@ -22,14 +22,30 @@ namespace Tendou
 			return data;
 		}
 
+		static void* AlignedAlloc(size_t size, size_t alignment)
+		{
+			void* data = nullptr;
+#if defined(_MSC_VER) || defined(__MINGW32__)
+			data = _aligned_malloc(size, alignment);
+#else
+			int res = posix_memalign(&data, alignment, size);
+			if (res != 0)
+				data = nullptr;
+#endif
+			return data;
+		}
+
+		static void AlignedFree(void* data)
+		{
+#if	defined(_MSC_VER) || defined(__MINGW32__)
+			_aligned_free(data);
+#else
+			free(data);
+#endif
+		}
+
 	private:
 		T data;
-	};
-
-	class RenderUBO
-	{
-	public:
-		glm::mat4 view = glm::mat4(1.0f);
 	};
 
 	class WorldUBO
@@ -38,6 +54,13 @@ namespace Tendou
 		glm::mat4 proj = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::vec2 nearFar = glm::vec2(0.0f);
+	};
+
+	class RenderUBO
+	{
+	public:
+		glm::mat4 proj = glm::mat4(1.0f);
+		glm::mat4* view = nullptr;
 	};
 
 	class LightsUBO

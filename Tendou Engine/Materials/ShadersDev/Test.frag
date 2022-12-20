@@ -12,13 +12,6 @@ layout(set = 0, binding = 0) uniform WorldUBO
 	mat4 view;
 } worldUBO;
 
-layout(set = 0, binding = 1) uniform LightUBO
-{
-	vec4 ambient;
-	vec3 lightPos;
-	vec4 lightColor;
-} lightUBO;
-
 layout(push_constant) uniform Push
 {
 	mat4 modelMatrix; // projection * view * model
@@ -27,13 +20,5 @@ layout(push_constant) uniform Push
 
 void main()
 {
-	vec3 lightDir = lightUBO.lightPos - fragPosWorld;
-	float att = 1.0f / dot(lightDir, lightDir);
-	
-	vec3 lightColor = lightUBO.lightColor.xyz * lightUBO.lightColor.w * att;
-	vec3 amb = lightUBO.ambient.xyz * lightUBO.ambient.w;
-	
-	vec3 diff = lightColor * max(dot(normalize(fragNormalWorld), normalize(lightDir)), 0.0f);
-	
-	outColor = vec4(fragColor, 1.0);
+	outColor = vec4(1.0);
 }

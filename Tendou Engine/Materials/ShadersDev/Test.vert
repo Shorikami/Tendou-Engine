@@ -15,14 +15,6 @@ layout(set = 0, binding = 0) uniform WorldUBO
 	mat4 view;
 } worldUBO;
 
-layout(set = 0, binding = 1) uniform LightUBO
-{
-	vec4 ambient;
-	vec3 lightPos;
-	vec4 lightColor;
-	
-} lightUBO;
-
 layout(push_constant) uniform Push
 {
 	mat4 modelMatrix; // projection * view * model

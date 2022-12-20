@@ -8,6 +8,7 @@ namespace Tendou
 		globalPool = DescriptorPool::Builder(device)
 			.SetMaxSets(20)
 			.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20)
+			.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 20)
 			.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20)
 			.Build();
 
@@ -101,8 +102,15 @@ namespace Tendou
 			.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build();
 
-		auto bufInfo = worldUBO->DescriptorInfo();
-		auto bufInfo2 = lightUBO->DescriptorInfo();
+		setLayouts["Offscreen"] = DescriptorSetLayout::Builder(device)
+			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.Build();
+
+		auto worldBuf = worldUBO->DescriptorInfo();
+		auto lightBuf = lightUBO->DescriptorInfo();
+
 		auto texInfo = textures[0]->DescriptorInfo();
 		auto texInfo2 = textures[1]->DescriptorInfo();
 		auto texInfo3 = textures[2]->DescriptorInfo();
@@ -112,17 +120,18 @@ namespace Tendou
 			renderPasses["Offscreen1"].descriptor.imageLayout };
 
 		descriptorSets["Global"].resize(3);
+		descriptorSets["Offscreen"].resize(1);
 
 		// Object set
 		DescriptorWriter(*setLayouts["Global"], *globalPool)
-			.WriteBuffer(0, &bufInfo)
-			.WriteBuffer(1, &bufInfo2)
+			.WriteBuffer(0, &worldBuf)
+			.WriteBuffer(1, &lightBuf)
 			.WriteImage(2, &texInfo4)
 			.Build(descriptorSets["Global"][0]);
 
 		// Skybox set
 		DescriptorWriter(*setLayouts["Global"], *globalPool)
-			.WriteBuffer(0, &bufInfo)
+			.WriteBuffer(0, &worldBuf)
 			//.WriteBuffer(1, &bufInfo2)
 			.WriteImage(2, &texInfo2)
 			.WriteImage(3, &texInfo3)
@@ -130,10 +139,16 @@ namespace Tendou
 
 		// Offscreen set
 		DescriptorWriter(*setLayouts["Global"], *globalPool)
-			.WriteBuffer(0, &bufInfo)
-			.WriteBuffer(1, &bufInfo2)
+			.WriteBuffer(0, &worldBuf)
+			.WriteBuffer(1, &lightBuf)
 			.WriteImage(2, &texInfo2)
 			.Build(descriptorSets["Global"][2]);
+
+		DescriptorWriter(*setLayouts["Offscreen"], *globalPool)
+			.WriteBuffer(0, &worldBuf)
+			.WriteBuffer(1, &lightBuf)
+			.WriteImage(3, &texInfo3)
+			.Build(descriptorSets["Offscreen"][0]);
 
 		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
 		{
@@ -230,7 +245,7 @@ namespace Tendou
 		for (auto& a : gameObjects)
 		{
 			auto& obj = a.second;
-			if (obj.GetTag() == "Sphere")
+			if (obj.GetTag() == "Light")
 			{
 				if (idx >= editorVars.currLights)
 				{
@@ -285,12 +300,22 @@ namespace Tendou
 		return 0;
 	}
 
+	void LightingScene::OverwriteWorldUBO(glm::mat4 view, int i)
+	{
+		WorldUBO localUBO{};
+		localUBO.proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 1000.0f);
+		localUBO.view = glm::mat4(0.0f + i);
+		localUBO.nearFar = glm::vec2(editorVars.nearFar.x, editorVars.nearFar.y);
+		worldUBO->WriteToBuffer(&localUBO);
+		worldUBO->Flush();
+	}
+
 	void LightingScene::LoadGameObjects()
 	{
 		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, Model::Type::OBJ,
 			"Materials/Models/smooth_vase.obj");
 
-		auto whiteFang = GameObject::CreateGameObject("Object");
+		auto whiteFang = GameObject::CreateGameObject("TextureTarget", "Vase");
 		whiteFang.SetModel(model);
 		whiteFang.GetTransform().SetTranslation(glm::vec3(0.f));
 		whiteFang.GetTransform().SetRotation(glm::vec3(0.0f, 0.5f, 0.0f));
@@ -304,7 +329,7 @@ namespace Tendou
 
 		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
 		{
-			auto sphere = GameObject::CreateGameObject("Sphere");
+			auto sphere = GameObject::CreateGameObject("Light", "Sphere");
 			sphere.SetModel(model);
 			sphere.GetTransform().SetTranslation(glm::vec3(0.0f, 0.0f, editorVars.sphereLineRad));
 			sphere.GetTransform().SetRotation(glm::vec3(0.0f, 1.0f, 0.0f));
@@ -316,7 +341,7 @@ namespace Tendou
 		model = Model::CreateModelFromFile(device, Model::Type::OBJ,
 			"Materials/Models/cube.obj", std::string(), true);
 
-		auto skybox = GameObject::CreateGameObject("Skybox");
+		auto skybox = GameObject::CreateGameObject("Skybox", "Sky");
 		skybox.SetModel(model);
 		skybox.GetTransform().SetTranslation(glm::vec3(0.f));
 		//skybox.GetTransform().SetRotation(glm::vec3(0.0f, 0.5f, 0.0f));
