@@ -5,15 +5,85 @@
 
 namespace Tendou
 {
+	class WorldUBO
+	{
+	public:
+		glm::mat4 proj = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::vec2 nearFar = glm::vec2(0.0f);
+	};
+
+	class RenderUBO
+	{
+	public:
+		glm::mat4 proj = glm::mat4(1.0f);
+		glm::mat4* view = nullptr;
+	};
+
+	class LightsUBO
+	{
+	public:
+		glm::vec4 lightPos[16] = {};
+		glm::vec4 lightColor[16] = {};
+		glm::vec4 lightDir[16] = {};
+
+		glm::vec4 eyePos = {};
+		glm::vec4 emissive = {};
+		glm::vec4 globalAmbient = {};
+		glm::vec4 coefficients = {}; // x = kA, y = kD, z = kS, w = ns
+
+		glm::vec4 fogColor = glm::vec4(1.0f);
+
+		glm::vec4 specular[16] = {};
+		glm::vec4 ambient[16] = {};
+		glm::vec4 diffuse[16] = {};
+
+		glm::vec4 lightInfo[16] = {}; // x = inner, y = outer, z = falloff, w = type
+
+		glm::vec4 modes = {}; // x = use gpu, y = use normals, z = UV calculation type
+
+		glm::vec3 attenuation = glm::vec3(0.5f, 0.37f, 0.2f); // x = c1, y = c2, z = c3
+		int numLights;
+		//float _pad; // std140 requires padding - vec4 = 16 bytes, vec3 + float == 12 + 4 = 16 bytes
+	};
+
+	namespace UBO
+	{
+		enum class Type
+		{
+			WORLD = 0,
+			LIGHTS,
+			CAPTURE
+		};
+
+		static uint32_t SizeofUBO(Type t)
+		{
+			switch (t)
+			{
+			case Type::WORLD:
+				return sizeof(WorldUBO);
+				break;
+			case Type::LIGHTS:
+				return sizeof(LightsUBO);
+				break;
+			case Type::CAPTURE:
+				return sizeof(glm::mat4) * 2;
+				break;
+			}
+			return 0;
+		}
+	}
+
 	template <typename T>
 	class UniformBuffer : public Buffer
 	{
 	public:
-		UniformBuffer(TendouDevice& device, VkDeviceSize instanceSize, uint32_t instanceCount,
+		UniformBuffer(UBO::Type t, TendouDevice& device, VkDeviceSize instanceSize, uint32_t instanceCount,
 			VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
 			VkDeviceSize minOffsetAlignment = 1)
-		: Buffer(device, instanceSize, instanceCount,
-			usageFlags, memoryPropertyFlags, minOffsetAlignment)
+			: Buffer(device, instanceSize, instanceCount,
+				usageFlags, memoryPropertyFlags, minOffsetAlignment)
+			, type(t)
 		{
 		}
 
@@ -46,47 +116,7 @@ namespace Tendou
 
 	private:
 		T data;
-	};
-
-	class WorldUBO
-	{
-	public:
-		glm::mat4 proj = glm::mat4(1.0f);
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::vec2 nearFar = glm::vec2(0.0f);
-	};
-
-	class RenderUBO
-	{
-	public:
-		glm::mat4* view = nullptr;
-	};
-
-	class LightsUBO
-	{
-	public:
-		glm::vec4 lightPos[16] = {};
-		glm::vec4 lightColor[16] = {};
-		glm::vec4 lightDir[16] = {};
-
-		glm::vec4 eyePos = {};
-		glm::vec4 emissive = {};
-		glm::vec4 globalAmbient = {};
-		glm::vec4 coefficients = {}; // x = kA, y = kD, z = kS, w = ns
-
-		glm::vec4 fogColor = glm::vec4(1.0f);
-
-		glm::vec4 specular[16] = {};
-		glm::vec4 ambient[16] = {};
-		glm::vec4 diffuse[16] = {};
-
-		glm::vec4 lightInfo[16] = {}; // x = inner, y = outer, z = falloff, w = type
-
-		glm::vec4 modes = {}; // x = use gpu, y = use normals, z = UV calculation type
-
-		glm::vec3 attenuation = glm::vec3(0.5f, 0.37f, 0.2f); // x = c1, y = c2, z = c3
-		int numLights;
-		//float _pad; // std140 requires padding - vec4 = 16 bytes, vec3 + float == 12 + 4 = 16 bytes
+		UBO::Type type;
 	};
 }
 

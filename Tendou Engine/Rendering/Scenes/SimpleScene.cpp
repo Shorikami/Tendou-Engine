@@ -21,16 +21,18 @@ namespace Tendou
 	int SimpleScene::Init()
 	{
 		worldUBO = std::make_unique<UniformBuffer<WorldUBO>>(
+			UBO::Type::WORLD,
 			device,
-			static_cast<uint32_t>(sizeof(WorldUBO)),
+			UBO::SizeofUBO(UBO::Type::WORLD),
 			1,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		worldUBO->Map();
 
 		lightUBO = std::make_unique <UniformBuffer<LightsUBO>>(
+			UBO::Type::LIGHTS,
 			device,
-			sizeof(LightsUBO),
+			UBO::SizeofUBO(UBO::Type::LIGHTS),
 			1,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);

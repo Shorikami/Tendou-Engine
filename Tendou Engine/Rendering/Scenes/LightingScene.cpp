@@ -65,24 +65,27 @@ namespace Tendou
 	int LightingScene::Init()
 	{
 		worldUBO = std::make_unique<UniformBuffer<WorldUBO>>(
+			UBO::Type::WORLD,
 			device,
-			static_cast<uint32_t>(sizeof(WorldUBO)),
+			UBO::SizeofUBO(UBO::Type::WORLD),
 			1,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		worldUBO->Map();
 
 		lightUBO = std::make_unique<UniformBuffer<LightsUBO>>(
+			UBO::Type::LIGHTS,
 			device,
-			sizeof(LightsUBO),
+			UBO::SizeofUBO(UBO::Type::LIGHTS),
 			1,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		lightUBO->Map();
 
 		captureUBO = std::make_unique<UniformBuffer<RenderUBO>>(
+			UBO::Type::CAPTURE,
 			device,
-			sizeof(glm::mat4),
+			UBO::SizeofUBO(UBO::Type::CAPTURE),
 			6,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -319,9 +322,12 @@ namespace Tendou
 
 	void LightingScene::OverwriteWorldUBO(glm::mat4 view, int i)
 	{
-		glm::mat4* viewMat = dynamic_cast<UniformBuffer<RenderUBO>*>(captureUBO.get())->GetData().view;
-		*viewMat = view;
-		captureUBO->WriteToBuffer(viewMat, sizeof(glm::mat4), captureUBO->GetAlignmentSize() * i);
+		RenderUBO localUBO;
+		localUBO.proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 1000.0f);
+		localUBO.view = dynamic_cast<UniformBuffer<RenderUBO>*>(captureUBO.get())->GetData().view;
+		*localUBO.view = view;
+		captureUBO->WriteToBuffer(&localUBO.proj, sizeof(glm::mat4), (captureUBO->GetAlignmentSize() * i));
+		captureUBO->WriteToBuffer(localUBO.view, sizeof(glm::mat4), (captureUBO->GetAlignmentSize() * i) + sizeof(glm::mat4));
 		captureUBO->Flush();
 	}
 
