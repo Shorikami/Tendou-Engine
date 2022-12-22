@@ -13,6 +13,7 @@ namespace Tendou
 		Texture(TendouDevice& device, std::string filePath = std::string());
 
 		// Cubemap
+		// TODO: Move cubemap to its own class?
 		Texture(TendouDevice& device, std::vector<std::string> faces);
 
 		~Texture();

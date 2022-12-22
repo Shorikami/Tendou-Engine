@@ -42,7 +42,7 @@
     <ClCompile Include="Vulkan\Descriptor.cpp" />
     <ClCompile Include="Rendering\Model.cpp" />
     <ClCompile Include="Vulkan\Systems\Default.cpp" />
-    <ClCompile Include="Vulkan\Systems\OffscreenSystem.cpp" />
+    <ClCompile Include="Vulkan\Systems\Offscreen.cpp" />
     <ClCompile Include="Vulkan\Systems\RenderSystem.cpp" />
     <ClCompile Include="Rendering\Scenes\Scene.cpp" />
     <ClCompile Include="Rendering\Texture.cpp" />
@@ -77,7 +77,7 @@
     <ClInclude Include="Rendering\FrameInfo.h" />
     <ClInclude Include="Rendering\Model.h" />
     <ClInclude Include="Vulkan\Systems\Default.h" />
-    <ClInclude Include="Vulkan\Systems\OffscreenSystem.h" />
+    <ClInclude Include="Vulkan\Systems\Offscreen.h" />
     <ClInclude Include="Vulkan\Systems\RenderSystem.h" />
     <ClInclude Include="Rendering\Scenes\Scene.h" />
     <ClInclude Include="Rendering\Texture.h" />

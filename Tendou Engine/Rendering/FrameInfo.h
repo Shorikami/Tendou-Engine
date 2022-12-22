@@ -10,25 +10,30 @@ namespace Tendou
 	struct FrameInfo
 	{
 		FrameInfo(int a, float b, 
-			VkCommandBuffer c, Camera& d, std::vector<VkDescriptorSet> e, 
-			GameObject::Map& f, uint32_t g = 0)
+			VkCommandBuffer c, uint32_t d = 0)
 			: frameIdx(a)
 			, frameTime(b)
 			, commandBuffer(c)
-			, cam(d)
-			, descriptorSets(e)
-			, gameObjects(f)
-			, dynamicOffset(g)
+			, dynamicOffset(d)
 		{
 		}
 
 		int frameIdx;
 		float frameTime;
 		VkCommandBuffer commandBuffer;
-		Camera& cam;
+		uint32_t dynamicOffset;
+	};
+
+	struct SceneInfo
+	{
+		SceneInfo(std::vector<VkDescriptorSet> a, GameObject::Map& b)
+			: descriptorSets(a)
+			, gameObjects(b)
+		{
+		}
+
 		std::vector<VkDescriptorSet> descriptorSets;
 		GameObject::Map& gameObjects;
-		uint32_t dynamicOffset;
 	};
 }
 

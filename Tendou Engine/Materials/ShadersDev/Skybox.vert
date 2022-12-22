@@ -15,12 +15,6 @@ layout(set = 0, binding = 0) uniform WorldUBO
 	vec2 nearFar;
 } worldUBO;
 
-layout(set = 0, binding = 5) uniform RenderUBO
-{
-	mat4 proj;
-	mat4 view;
-} captureUBO;
-
 layout(push_constant) uniform Push
 {
 	mat4 modelMatrix;
@@ -32,7 +26,7 @@ void main()
 	vec4 viewPos = push.modelMatrix * vec4(aPos, 1.0);
 	
 	// TODO: View calculation is expensive. Do it on the CPU
-	gl_Position = captureUBO.proj * mat4(mat3(captureUBO.view)) * viewPos;
+	gl_Position = worldUBO.proj * mat4(mat3(worldUBO.view)) * viewPos;
 	
 	fragPos = aPos;
 	texCoords = aTexCoord;

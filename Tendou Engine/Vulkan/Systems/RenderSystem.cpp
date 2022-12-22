@@ -5,15 +5,28 @@ namespace Tendou
 	RenderSystem::RenderSystem(TendouDevice& device_)
 		: device(device_)
 		, layout(nullptr)
+		, count(1)
 	{
 	}
 
 	RenderSystem::~RenderSystem()
 	{
-		vkDestroyPipelineLayout(device.Device(), layout, nullptr);
+		--count;
+		if (count <= 0)
+		{
+			vkDestroyPipelineLayout(device.Device(), layout, nullptr);
+		}
 	}
 
-	void RenderSystem::Render(FrameInfo& frame)
+	//RenderSystem::RenderSystem(const RenderSystem& other)
+	//	: device(other.device)
+	//	, pipeline(other.pipeline)
+	//	, layout(other.layout)
+	//	, count(other.count + 1)
+	//{
+	//}
+
+	void RenderSystem::Render(FrameInfo& frame, SceneInfo& scene)
 	{
 		return;
 	}

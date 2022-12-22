@@ -55,27 +55,27 @@ namespace Tendou
 		pipelineConfig.renderPass = pass;
 		pipelineConfig.pipelineLayout = layout;
 
-		pipeline.push_back(std::make_unique<Pipeline>(device,
+		pipeline.push_back(std::make_shared<Pipeline>(device,
 			"Materials/Shaders/Lighting.vert.spv",
 			"Materials/Shaders/Lighting.frag.spv",
 			pipelineConfig));
 
-		pipeline.push_back(std::make_unique<Pipeline>(device,
+		pipeline.push_back(std::make_shared<Pipeline>(device,
 			"Materials/Shaders/Test.vert.spv",
 			"Materials/Shaders/Test.frag.spv",
 			pipelineConfig));
 
-		pipeline.push_back(std::make_unique<Pipeline>(device,
+		pipeline.push_back(std::make_shared<Pipeline>(device,
 			"Materials/Shaders/Skybox.vert.spv",
 			"Materials/Shaders/Skybox.frag.spv",
 			pipelineConfig));
 	}
 
-	void DefaultSystem::Render(FrameInfo& frame)
+	void DefaultSystem::Render(FrameInfo& frame, SceneInfo& scene)
 	{
 		int count = 0;
 
-		for (auto& kv : frame.gameObjects)
+		for (auto& kv : scene.gameObjects)
 		{
 			auto& obj = kv.second;
 			if (obj.GetModel() == nullptr)
@@ -97,55 +97,55 @@ namespace Tendou
 			// TODO: Make this a switch statement (tagging optimizations)
 			if (obj.GetTag() == "Light" && obj.GetRender())
 			{
-				RenderSpheres(obj, frame);
+				RenderSpheres(obj, scene, frame.commandBuffer);
 			}
 			else if (obj.GetTag() != "Light")
 			{
 				//RenderObject(obj, frame);
 				if (obj.GetTag() == "Skybox")
 				{
-					RenderSkybox(obj, frame);
+					RenderSkybox(obj, scene, frame.commandBuffer);
 				}
 				else
 				{
-					RenderObject(obj, frame);
+					RenderObject(obj, scene, frame.commandBuffer);
 				}
 				
 			}
 		}
 	}
 
-	void DefaultSystem::RenderObject(GameObject& obj, FrameInfo& f)
+	void DefaultSystem::RenderObject(GameObject& obj, SceneInfo& f, VkCommandBuffer buf)
 	{
-		pipeline[0]->Bind(f.commandBuffer);
+		pipeline[0]->Bind(buf);
 
-		vkCmdBindDescriptorSets(f.commandBuffer,
+		vkCmdBindDescriptorSets(buf,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			layout, 0, 1, &f.descriptorSets[0],
 			0, nullptr);
 
-		obj.GetModel()->Bind(f.commandBuffer);
-		obj.GetModel()->Draw(f.commandBuffer);
+		obj.GetModel()->Bind(buf);
+		obj.GetModel()->Draw(buf);
 	}
 
-	void DefaultSystem::RenderSpheres(GameObject& obj, FrameInfo& f)
+	void DefaultSystem::RenderSpheres(GameObject& obj, SceneInfo& f, VkCommandBuffer buf)
 	{
-		pipeline[1]->Bind(f.commandBuffer);
+		pipeline[1]->Bind(buf);
 
-		obj.GetModel()->Bind(f.commandBuffer);
-		obj.GetModel()->Draw(f.commandBuffer);
+		obj.GetModel()->Bind(buf);
+		obj.GetModel()->Draw(buf);
 	}
 
-	void DefaultSystem::RenderSkybox(GameObject& obj, FrameInfo& f)
+	void DefaultSystem::RenderSkybox(GameObject& obj, SceneInfo& f, VkCommandBuffer buf)
 	{
-		pipeline[2]->Bind(f.commandBuffer);
+		pipeline[2]->Bind(buf);
 
-		vkCmdBindDescriptorSets(f.commandBuffer,
+		vkCmdBindDescriptorSets(buf,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			layout, 0, 1, &f.descriptorSets[1],
 			0, nullptr);
 
-		obj.GetModel()->Bind(f.commandBuffer);
-		obj.GetModel()->Draw(f.commandBuffer);
+		obj.GetModel()->Bind(buf);
+		obj.GetModel()->Draw(buf);
 	}
 }

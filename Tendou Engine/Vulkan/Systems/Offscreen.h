@@ -1,5 +1,5 @@
-#ifndef OFFSCREENSYSTEM_H
-#define OFFSCREENSYSTEM_H
+#ifndef OFFSCREEN_H
+#define OFFSCREEN_H
 
 #include "RenderSystem.h"
 
@@ -13,7 +13,7 @@ namespace Tendou
 		OffscreenSystem(const OffscreenSystem&) = delete;
 		OffscreenSystem& operator=(const OffscreenSystem&) = delete;
 
-		void Render(FrameInfo& frame) override;
+		void Render(FrameInfo& frame, SceneInfo& scene) override;
 
 		uint32_t offset;
 
@@ -22,8 +22,8 @@ namespace Tendou
 		void CreatePipeline(VkRenderPass pass) override;
 	
 	private:
-		void RenderSpheres(GameObject& obj, FrameInfo& f);
-		void RenderSkybox(GameObject& obj, FrameInfo& f);
+		void RenderSpheres(GameObject& obj, VkCommandBuffer buf);
+		void RenderSkybox(GameObject& obj, VkCommandBuffer buf);
 	};
 }
 

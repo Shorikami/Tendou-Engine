@@ -23,7 +23,7 @@ namespace Tendou
 		RenderSystem(const RenderSystem&) = delete;
 		RenderSystem& operator=(const RenderSystem&) = delete;
 
-		virtual void Render(FrameInfo& frame);
+		virtual void Render(FrameInfo& frame, SceneInfo& scene);
 
 	protected:
 		// TODO: remove once you're done testing
@@ -33,8 +33,9 @@ namespace Tendou
 		virtual void CreatePipeline(VkRenderPass pass);
 
 		TendouDevice& device;
-		std::vector<std::unique_ptr<Pipeline>> pipeline;
+		std::vector<std::shared_ptr<Pipeline>> pipeline;
 		VkPipelineLayout layout;
+		int count;
 
 	private:
 		// TODO: remove once you're done testing

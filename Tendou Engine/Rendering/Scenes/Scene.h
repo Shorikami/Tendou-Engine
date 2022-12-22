@@ -8,6 +8,7 @@
 #include "../../Vulkan/TendouDevice.h"
 
 #include "../../Vulkan/Systems/Default.h"
+#include "../../Vulkan/Systems/Offscreen.h"
 
 #include "../../Rendering/Camera.h"
 
@@ -44,7 +45,7 @@ namespace Tendou
 		virtual int Update();
 		virtual int PostUpdate();
 
-		virtual int Render(VkCommandBuffer buf, DefaultSystem& test, FrameInfo& f);
+		virtual int Render(VkCommandBuffer buf, FrameInfo& f);
 
 		__inline bool IsFrameInProgress() const { return isFrameStarted; }
 		__inline VkRenderPass GetSwapChainRenderPass() const { return swapChain->GetRenderPass(); }
@@ -100,6 +101,7 @@ namespace Tendou
 		Window& appWindow;
 		TendouDevice& device;
 
+		std::unordered_map<std::string, std::vector<std::unique_ptr<RenderSystem>>> renderSystems;
 		std::unordered_map<std::string, Tendou::RenderPass> renderPasses;
 
 		std::unique_ptr<SwapChain> swapChain;

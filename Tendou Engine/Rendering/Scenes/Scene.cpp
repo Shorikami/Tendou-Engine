@@ -43,7 +43,7 @@ namespace Tendou
 		return -1;
 	}
 
-	int Scene::Render(VkCommandBuffer buf, DefaultSystem& test, FrameInfo& f)
+	int Scene::Render(VkCommandBuffer buf, FrameInfo& f)
 	{
 		return -1;
 	}

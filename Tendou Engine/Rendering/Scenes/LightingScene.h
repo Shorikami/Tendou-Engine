@@ -41,18 +41,27 @@ namespace Tendou
 		int Update() override;
 		int PostUpdate() override;
 
-		void OverwriteWorldUBO(glm::mat4 view, int i);
-		size_t testOffset;
+		int Render(VkCommandBuffer buf, FrameInfo& f) override;
 
-		//int Render(VkCommandBuffer buf, DefaultSystem& test, FrameInfo& f) override;
+
+		
 
 	private:
 		void LoadGameObjects();
+
+		void CreateUBOs();
+		void CreateSetLayouts();
+		void CreateRenderPasses();
+		void CreateRenderSystems();
+
+		void WriteToCaptureUBO(glm::mat4 view, int i);
 
 		std::unique_ptr<UniformBuffer<WorldUBO>> worldUBO;
 		std::unique_ptr<UniformBuffer<LightsUBO>> lightUBO;
 		std::unique_ptr<UniformBuffer<RenderUBO>> captureUBO;
 		std::vector<std::unique_ptr<Texture>> textures;
+
+		size_t testOffset;
 	};
 }
 

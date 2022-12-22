@@ -108,7 +108,7 @@
     <ClCompile Include="Rendering\Scenes\LightingScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Vulkan\Systems\OffscreenSystem.cpp">
+    <ClCompile Include="Vulkan\Systems\Offscreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -212,7 +212,7 @@
     <ClInclude Include="Rendering\Scenes\LightingScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Vulkan\Systems\OffscreenSystem.h">
+    <ClInclude Include="Vulkan\Systems\Offscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

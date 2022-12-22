@@ -1,4 +1,4 @@
-#include "OffscreenSystem.h"
+#include "Offscreen.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -55,27 +55,27 @@ namespace Tendou
 		pipelineConfig.renderPass = pass;
 		pipelineConfig.pipelineLayout = layout;
 
-		pipeline.push_back(std::make_unique<Pipeline>(device,
-			"Materials/Shaders/Test.vert.spv",
-			"Materials/Shaders/Test.frag.spv",
+		pipeline.push_back(std::make_shared<Pipeline>(device,
+			"Materials/Shaders/Test2.vert.spv",
+			"Materials/Shaders/Test2.frag.spv",
 			pipelineConfig));
 
-		pipeline.push_back(std::make_unique<Pipeline>(device,
-			"Materials/Shaders/Skybox.vert.spv",
-			"Materials/Shaders/Skybox.frag.spv",
+		pipeline.push_back(std::make_shared<Pipeline>(device,
+			"Materials/Shaders/Skybox2.vert.spv",
+			"Materials/Shaders/Skybox2.frag.spv",
 			pipelineConfig));
 	}
 
-	void OffscreenSystem::Render(FrameInfo& frame)
+	void OffscreenSystem::Render(FrameInfo& frame, SceneInfo& scene)
 	{
 		int count = 0;
 		vkCmdBindDescriptorSets(frame.commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			layout, 0, 1, &frame.descriptorSets[0],
+			layout, 0, 1, &scene.descriptorSets[0],
 			1, &frame.dynamicOffset);
 
 
-		for (auto& kv : frame.gameObjects)
+		for (auto& kv : scene.gameObjects)
 		{
 			auto& obj = kv.second;
 			if (obj.GetModel() == nullptr)
@@ -101,28 +101,28 @@ namespace Tendou
 			// dynamic reflections
 			if (obj.GetTag() == "Light" && obj.GetRender())
 			{
-				RenderSpheres(obj, frame);
+				RenderSpheres(obj, frame.commandBuffer);
 			}
 			else if (obj.GetTag() == "Skybox")
 			{
-				RenderSkybox(obj, frame);
+				RenderSkybox(obj, frame.commandBuffer);
 			}
 		}
 	}
 
-	void OffscreenSystem::RenderSpheres(GameObject& obj, FrameInfo& f)
+	void OffscreenSystem::RenderSpheres(GameObject& obj, VkCommandBuffer buf)
 	{
-		pipeline[0]->Bind(f.commandBuffer);
+		pipeline[0]->Bind(buf);
 
-		obj.GetModel()->Bind(f.commandBuffer);
-		obj.GetModel()->Draw(f.commandBuffer);
+		obj.GetModel()->Bind(buf);
+		obj.GetModel()->Draw(buf);
 	}
 
-	void OffscreenSystem::RenderSkybox(GameObject& obj, FrameInfo& f)
+	void OffscreenSystem::RenderSkybox(GameObject& obj, VkCommandBuffer buf)
 	{
-		pipeline[1]->Bind(f.commandBuffer);
+		pipeline[1]->Bind(buf);
 
-		obj.GetModel()->Bind(f.commandBuffer);
-		obj.GetModel()->Draw(f.commandBuffer);
+		obj.GetModel()->Bind(buf);
+		obj.GetModel()->Draw(buf);
 	}
 }
