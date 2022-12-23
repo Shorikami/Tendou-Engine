@@ -70,7 +70,7 @@ namespace Tendou
 
 	void Camera::UpdateCameraZoom(double dy)
 	{
-		if (zoom >= 1.0f && zoom <= 45.0f)
+		if (zoom >= 1.0f && zoom <= 90.0f)
 		{
 			zoom -= static_cast<float>(dy);
 		}
@@ -80,7 +80,7 @@ namespace Tendou
 		}
 		else
 		{
-			zoom = 45.0f;
+			zoom = 90.0f;
 		}
 	}
 

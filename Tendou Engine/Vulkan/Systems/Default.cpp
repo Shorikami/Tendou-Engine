@@ -56,8 +56,8 @@ namespace Tendou
 		pipelineConfig.pipelineLayout = layout;
 
 		pipeline.push_back(std::make_shared<Pipeline>(device,
-			"Materials/Shaders/Lighting.vert.spv",
-			"Materials/Shaders/Lighting.frag.spv",
+			"Materials/Shaders/EnvMap.vert.spv",
+			"Materials/Shaders/EnvMap.frag.spv",
 			pipelineConfig));
 
 		pipeline.push_back(std::make_shared<Pipeline>(device,

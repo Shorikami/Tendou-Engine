@@ -35,6 +35,7 @@ namespace Tendou
 
 		glfwSetKeyCallback(window, Keyboard::KeyCallback);
 		glfwSetCursorPosCallback(window, Mouse::CursorPosCallback);
+		glfwSetScrollCallback(window, Mouse::MouseWheelCallback);
 		glfwSetFramebufferSizeCallback(window, FramebufferResizeCallback);
 	}
 

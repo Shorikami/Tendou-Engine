@@ -105,7 +105,9 @@ namespace Tendou
             VkImage& image,
             VkDeviceMemory& imageMemory);
         void TransitionImageLayout(VkImage image, VkFormat format,
-            VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount = 1);
+            VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount = 1, 
+            VkCommandBuffer buf = nullptr, VkImageSubresourceRange range = 
+            { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
         VkPhysicalDeviceProperties properties;
 

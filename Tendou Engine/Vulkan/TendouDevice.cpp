@@ -523,6 +523,10 @@ namespace Tendou
         EndSingleTimeCommands(commandBuffer);
     }
 
+    // NOTE: This is for render passes specified for rendering textures
+    // to existing textures; mostly used to render to cube maps.
+    // TODO: Create separate render to texture functions for easier
+    // specification
     RenderPass TendouDevice::CreateRenderPass(int width, int height)
     {
         RenderPass res;
@@ -536,27 +540,35 @@ namespace Tendou
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = res.width;
-        imageInfo.extent.height = res.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        //VkImageCreateInfo imageInfo{};
+        //imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        //imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        //imageInfo.extent.width = res.width;
+        //imageInfo.extent.height = res.height;
+        //imageInfo.extent.depth = 1;
+        //imageInfo.mipLevels = 1;
+        //imageInfo.arrayLayers = 1;
+        //imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+        //imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        //imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        //imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        //imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        //imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+        // Create a render-to-texture image that will be transferred to a
+        // cube map face (VK_IMAGE_USAGE_TRANSFER_SRC_BIT specifies this)
         CreateImage(res.width, res.height, VK_FORMAT_R8G8B8A8_UNORM,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, res.color.image, res.color.memory);
 
-        res.color.view = CreateImageView(res.color.image, VK_FORMAT_R8G8B8A8_UNORM);
+        // Turn the image layout from UNDEFINED to COLOR_ATTACHMENT
+        TransitionImageLayout(res.color.image, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
+        // Create the image view
+        res.color.view = CreateImageView(res.color.image, VK_FORMAT_R8G8B8A8_UNORM);
+        
+        // Create the sampler (not needed?)
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -600,8 +612,8 @@ namespace Tendou
         //depthStencilView.image = offscreenPass.depth.image;
         //VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilView, nullptr, &offscreenPass.depth.view));
 
-        // Create a separate render pass for the offscreen rendering as it may differ from the one used for scene rendering
-
+        // Create a separate render pass for the offscreen rendering as it 
+        // may differ from the one used for scene rendering
         std::array<VkAttachmentDescription, 2> attchmentDescriptions = {};
         // Color attachment
         attchmentDescriptions[0].format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -610,8 +622,12 @@ namespace Tendou
         attchmentDescriptions[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attchmentDescriptions[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attchmentDescriptions[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attchmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attchmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        // These two layouts are specified via the image's previously specified layout
+        // (in this case it's VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        attchmentDescriptions[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attchmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
         // Depth attachment
         attchmentDescriptions[1].format = fbDepthFormat;
         attchmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
@@ -677,7 +693,7 @@ namespace Tendou
 
         vkCreateFramebuffer(device_, &framebufferInfo, nullptr, &res.frameBuffer);
 
-        // Fill a descriptor for later use in a descriptor set
+        // Fill a descriptor for later use in a descriptor set (not needed?)
         res.descriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         res.descriptor.imageView = res.color.view;
         res.descriptor.sampler = res.sampler;
@@ -685,6 +701,7 @@ namespace Tendou
         return res;
     }
 
+    // Create a VkImageView
     VkImageView TendouDevice::CreateImageView(VkImage image, VkFormat format,
         uint32_t layerCount, VkImageViewType viewType, VkImageAspectFlagBits aspectMask)
     {
@@ -707,6 +724,7 @@ namespace Tendou
         return imageView;
     }
 
+    // Create a VkImage
     void TendouDevice::CreateImage(uint32_t width, uint32_t height,
         VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
         VkMemoryPropertyFlags properties, VkImage& image,
@@ -772,10 +790,18 @@ namespace Tendou
         }
     }
 
+    // Change an image's layout. Can have its subresource range and buffer
+    // specified, but new textures will typically not be using those parameters.
+    // buf and range are primarily for render to texture targets
     void TendouDevice::TransitionImageLayout(VkImage image, VkFormat format,
-        VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount)
+        VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t layerCount, 
+        VkCommandBuffer buf, VkImageSubresourceRange range)
     {
-        VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
+        VkCommandBuffer commandBuffer = buf;
+        if (commandBuffer == nullptr)
+        {
+            commandBuffer = BeginSingleTimeCommands();
+        }
 
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -784,31 +810,105 @@ namespace Tendou
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.aspectMask = range.aspectMask;
+        barrier.subresourceRange.baseMipLevel = range.baseMipLevel;
+        barrier.subresourceRange.levelCount = range.levelCount;
+        barrier.subresourceRange.baseArrayLayer = range.baseArrayLayer;
         barrier.subresourceRange.layerCount = layerCount;
 
-        VkPipelineStageFlags sourceStage;
-        VkPipelineStageFlags destinationStage;
+        VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+        VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        switch (oldLayout)
+        {
+        case VK_IMAGE_LAYOUT_UNDEFINED:
+            // Image layout is undefined (or does not matter)
+            // Only valid as initial layout
+            // No flags required, listed only for completeness
             barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            break;
 
-            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        }
-        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        case VK_IMAGE_LAYOUT_PREINITIALIZED:
+            // Image is preinitialized
+            // Only valid as initial layout for linear images, preserves memory contents
+            // Make sure host writes have been finished
+            barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+            break;
+
+        case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+            // Image is a color attachment
+            // Make sure any writes to the color buffer have been finished
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            break;
+
+        case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+            // Image is a depth/stencil attachment
+            // Make sure any writes to the depth/stencil buffer have been finished
+            barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            break;
+
+        case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+            // Image is a transfer source
+            // Make sure any reads from the image have been finished
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            break;
+
+        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+            // Image is a transfer destination
+            // Make sure any writes to the image have been finished
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            break;
 
-            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+            // Image is read by a shader
+            // Make sure any shader reads from the image have been finished
+            barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            break;
+        default:
+            // Other source layouts aren't handled (yet)
+            break;
         }
-        else {
-            throw std::invalid_argument("Unsupported layout transition!");
+
+        // Target layouts (new)
+        // Destination access mask controls the dependency for the new image layout
+        switch (newLayout)
+        {
+        case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+            // Image will be used as a transfer destination
+            // Make sure any writes to the image have been finished
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            break;
+
+        case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+            // Image will be used as a transfer source
+            // Make sure any reads from the image have been finished
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            break;
+
+        case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+            // Image will be used as a color attachment
+            // Make sure any writes to the color buffer have been finished
+            barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            break;
+
+        case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+            // Image layout will be used as a depth/stencil attachment
+            // Make sure any writes to depth/stencil buffer have been finished
+            barrier.dstAccessMask = barrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            break;
+
+        case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+            // Image will be read in a shader (sampler, input attachment)
+            // Make sure any writes to the image have been finished
+            if (barrier.srcAccessMask == 0)
+            {
+                barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+            }
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            break;
+        default:
+            // Other source layouts aren't handled (yet)
+            break;
         }
 
         vkCmdPipelineBarrier(
@@ -820,6 +920,9 @@ namespace Tendou
             1, &barrier
         );
 
-        EndSingleTimeCommands(commandBuffer);
+        if (buf == nullptr)
+        {
+            EndSingleTimeCommands(commandBuffer);
+        }
     }
 }

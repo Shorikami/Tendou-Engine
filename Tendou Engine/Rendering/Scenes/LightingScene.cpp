@@ -222,15 +222,77 @@ namespace Tendou
 		// Offscreen render test
 		for (int i = 0; i < 6; ++i)
 		{
-			BeginRenderPass(buf, std::string("Offscreen") + std::to_string(i + 1));
+			std::string name = std::string("Offscreen") + std::to_string(i + 1);
+			BeginRenderPass(buf, name);
 			glm::vec3 objPos = gameObjects.find(0)->second.GetTransform().PositionVec3();
 			WriteToCaptureUBO(glm::lookAt(objPos, directionLookup[i], -upLookup[i]), i);
 			f.dynamicOffset = testOffset * i;
 
 			renderSystems["Offscreen"][i].get()->Render(f, offscreen);
 			EndRenderPass(buf);
+
+			// BEGIN COPYING OF RENDER TEXTURE IMAGES TO SPECIFIC
+			// FACES OF THE EMPTY CUBEMAP
+
+			// Make sure color writes to the framebuffer are finished before using it as transfer source
+			device.TransitionImageLayout(renderPasses[name].color.image, VK_FORMAT_R8G8B8A8_SRGB,
+				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1, buf);
+			
+			VkImageSubresourceRange cubeFaceSubresourceRange = {};
+			cubeFaceSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			cubeFaceSubresourceRange.baseMipLevel = 0;
+			cubeFaceSubresourceRange.levelCount = 1;
+			cubeFaceSubresourceRange.baseArrayLayer = i;
+			cubeFaceSubresourceRange.layerCount = 1;
+			
+			// Change image layout of one cubemap face to transfer destination
+			device.TransitionImageLayout(textures[3].get()->TextureImage(), VK_FORMAT_R8G8B8A8_SRGB,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, buf,
+				cubeFaceSubresourceRange);
+			
+			// Copy region for transfer from framebuffer to cube face
+			VkImageCopy copyRegion = {};
+			
+			copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			copyRegion.srcSubresource.baseArrayLayer = 0;
+			copyRegion.srcSubresource.mipLevel = 0;
+			copyRegion.srcSubresource.layerCount = 1;
+			copyRegion.srcOffset = { 0, 0, 0 };
+			
+			copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			copyRegion.dstSubresource.baseArrayLayer = i;
+			copyRegion.dstSubresource.mipLevel = 0;
+			copyRegion.dstSubresource.layerCount = 1;
+			copyRegion.dstOffset = { 0, 0, 0 };
+			
+			// temporary
+			copyRegion.extent.width = 1024;
+			copyRegion.extent.height = 720;
+			copyRegion.extent.depth = 1;
+			
+			// Put image copy into command buffer
+			vkCmdCopyImage(
+				buf,
+				renderPasses[name].color.image,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				textures[3].get()->TextureImage(),
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1,
+				&copyRegion);
+			
+			// Transform framebuffer color attachment back
+			device.TransitionImageLayout(renderPasses[name].color.image, VK_FORMAT_R8G8B8A8_SRGB,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1, buf);
+			
+			// Change image layout of copied face to shader read
+			device.TransitionImageLayout(textures[3].get()->TextureImage(), VK_FORMAT_R8G8B8A8_SRGB,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, buf,
+				cubeFaceSubresourceRange);
+
+			// END COPYING
 		}
 
+		// Render the actual scene (swapchain)
 		BeginSwapChainRenderPass(buf);
 
 		renderSystems["Global"][0].get()->Render(f, global);
@@ -342,6 +404,7 @@ namespace Tendou
 		textures.push_back(std::make_unique<Texture>(device, "Materials/Models/Shiroko/Texture2D/Shiroko_Original_Weapon.png"));
 		textures.push_back(std::make_unique<Texture>(device, "Materials/Textures/hoshino.png"));
 		textures.push_back(std::make_unique<Texture>(device, faces));
+		textures.push_back(std::make_unique<Texture>(device, 1024, 1024, true));
 
 		setLayouts["Global"] = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -362,13 +425,10 @@ namespace Tendou
 		auto captureBuf = captureUBO->DescriptorInfo();
 		captureBuf.range = captureUBO->GetAlignmentSize();
 
-		auto texInfo = textures[0]->DescriptorInfo();
-		auto texInfo2 = textures[1]->DescriptorInfo();
-		auto texInfo3 = textures[2]->DescriptorInfo();
-		auto texInfo4 = VkDescriptorImageInfo{
-			renderPasses["Offscreen1"].descriptor.sampler,
-			renderPasses["Offscreen1"].descriptor.imageView,
-			renderPasses["Offscreen1"].descriptor.imageLayout };
+		auto whiteFangTex = textures[0]->DescriptorInfo();
+		auto hoshino = textures[1]->DescriptorInfo();
+		auto skyboxTex = textures[2]->DescriptorInfo();
+		auto emptyMap = textures[3]->DescriptorInfo();
 
 		descriptorSets["Global"].resize(3);
 		descriptorSets["Offscreen"].resize(1);
@@ -377,28 +437,28 @@ namespace Tendou
 		DescriptorWriter(*setLayouts["Global"], *globalPool)
 			.WriteBuffer(0, &worldBuf)
 			.WriteBuffer(1, &lightBuf)
-			.WriteImage(2, &texInfo4)
+			.WriteImage(2, &emptyMap)
 			.Build(descriptorSets["Global"][0]);
 
 		// Skybox set
 		DescriptorWriter(*setLayouts["Global"], *globalPool)
 			.WriteBuffer(0, &worldBuf)
 			//.WriteBuffer(1, &bufInfo2)
-			.WriteImage(2, &texInfo2)
-			.WriteImage(3, &texInfo3)
+			.WriteImage(2, &hoshino)
+			.WriteImage(3, &skyboxTex)
 			.Build(descriptorSets["Global"][1]);
 
 		// Offscreen set
 		DescriptorWriter(*setLayouts["Global"], *globalPool)
 			.WriteBuffer(0, &worldBuf)
 			.WriteBuffer(1, &lightBuf)
-			.WriteImage(2, &texInfo2)
+			.WriteImage(2, &hoshino)
 			.Build(descriptorSets["Global"][2]);
 
 		DescriptorWriter(*setLayouts["Offscreen"], *globalPool)
 			.WriteBuffer(0, &worldBuf)
 			.WriteBuffer(5, &captureBuf)
-			.WriteImage(3, &texInfo3)
+			.WriteImage(3, &skyboxTex)
 			.Build(descriptorSets["Offscreen"][0]);
 	}
 

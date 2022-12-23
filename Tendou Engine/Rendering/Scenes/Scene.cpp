@@ -158,6 +158,8 @@ namespace Tendou
 
 	void Scene::ProcessInput(float dt, Camera& c)
 	{
+		c.UpdateCameraZoom(Mouse::GetScrollDY());
+
 		if (Keyboard::Key(GLFW_KEY_W))
 			c.UpdateCameraPos(CameraDirection::FORWARD, dt);
 		if (Keyboard::Key(GLFW_KEY_S))

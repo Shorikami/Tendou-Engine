@@ -10,6 +10,22 @@
 
 namespace Tendou
 {
+	Texture::Texture(TendouDevice& d, int w, int h, bool cubemap)
+		: device_(d)
+	{
+		CreateEmptyTexture(w, h, cubemap);
+		CreateTextureSampler();
+
+		if (cubemap)
+		{
+			CreateTextureImageView(6, VK_IMAGE_VIEW_TYPE_2D_ARRAY);
+		}
+		else
+		{
+			CreateTextureImageView();
+		}
+	}
+
 	Texture::Texture(TendouDevice& d, std::string filePath)
 		: device_(d)
 	{
@@ -26,6 +42,22 @@ namespace Tendou
 		CreateCubemap(faces);
 		CreateTextureImageView(6, VK_IMAGE_VIEW_TYPE_2D_ARRAY);
 		CreateTextureSampler(VK_FILTER_NEAREST);
+	}
+
+	void Texture::CreateEmptyTexture(int width, int height, bool cubemap)
+	{
+		// 32 bit float format for higher precision
+		VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+
+		uint32_t layerCount = !cubemap ? 1 : 6;
+		VkImageViewType viewType = !cubemap ? VK_IMAGE_VIEW_TYPE_2D : VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+
+		device_.CreateImage(width, height, format, VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory, layerCount);
+
+		device_.TransitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 6);
 	}
 
 	void Texture::CreateCubemap(std::vector<std::string> faces)
