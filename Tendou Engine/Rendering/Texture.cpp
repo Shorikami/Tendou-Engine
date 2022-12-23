@@ -64,7 +64,6 @@ namespace Tendou
 	{
 		int width, height, channels;
 		stbi_uc* imageBuffers[6];
-
 		for (unsigned i = 0; i < 6; ++i)
 		{
 			imageBuffers[i] = stbi_load(faces[i].c_str(), &width, &height, &channels, STBI_rgb_alpha);

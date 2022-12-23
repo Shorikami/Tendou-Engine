@@ -745,6 +745,14 @@ namespace Tendou
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+        // assume we're using a cubemap
+        // TODO: Don't assume. Make this a parameter
+        if (layerCount == 6)
+        {
+            imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+        }
+        
+
         if (vkCreateImage(device_, &imageInfo, nullptr, &image) != VK_SUCCESS) {
             throw std::runtime_error("failed to create image!");
         }

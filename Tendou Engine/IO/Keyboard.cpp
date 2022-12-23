@@ -7,6 +7,11 @@ namespace Tendou
 
 	void Keyboard::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
+		if (key < 0)
+		{
+			return;
+		}
+
 		if (action != GLFW_RELEASE)
 		{
 			if (!keys[key])

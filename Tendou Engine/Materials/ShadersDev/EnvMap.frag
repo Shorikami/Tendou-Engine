@@ -72,7 +72,7 @@ vec2 CubemapUV(vec3 v, out int idx)
 		// u (0 to 1) goes from +z to -z
 		// v (0 to 1) goes from -y to +y
 		maxAxis = absX;
-		uc = -z;
+		uc = z;
 		vc = y;
 		idx = 0;
 	}
@@ -83,7 +83,7 @@ vec2 CubemapUV(vec3 v, out int idx)
 		// u (0 to 1) goes from -z to +z
 		// v (0 to 1) goes from -y to +y
 		maxAxis = absX;
-		uc = z;
+		uc = -z;
 		vc = y;
 		idx = 1;
 	}
@@ -94,9 +94,9 @@ vec2 CubemapUV(vec3 v, out int idx)
 		// u (0 to 1) goes from -x to +x
 		// v (0 to 1) goes from +z to -z
 		maxAxis = absY;
-		uc = x;
-		vc = -z;
-		idx = 3;
+		uc = -x;
+		vc = z;
+		idx = 2;
 	}
 	
 		// NEGATIVE Y
@@ -105,9 +105,9 @@ vec2 CubemapUV(vec3 v, out int idx)
 		// u (0 to 1) goes from -x to +x
 		// v (0 to 1) goes from -z to +z
 		maxAxis = absY;
-		uc = x;
-		vc = z;
-		idx = 2;
+		uc = -x;
+		vc = -z;
+		idx = 3;
 	}
 	
 		// POSITIVE Z
@@ -116,7 +116,7 @@ vec2 CubemapUV(vec3 v, out int idx)
 		// u (0 to 1) goes from -x to +x
 		// v (0 to 1) goes from -y to +y
 		maxAxis = absZ;
-		uc = x;
+		uc = -x;
 		vc = y;
 		idx = 4;
 	}
@@ -127,7 +127,7 @@ vec2 CubemapUV(vec3 v, out int idx)
 		// u (0 to 1) goes from +x to -x
 		// v (0 to 1) goes from -y to +y
 		maxAxis = absZ;
-		uc = -x;
+		uc = x;
 		vc = y;
 		idx = 5;
 	}
@@ -139,13 +139,42 @@ vec2 CubemapUV(vec3 v, out int idx)
 	return uv;
 }
 
-vec4 SampleCubemap(vec3 v)
+vec4 SampleCubemap(vec3 eye)
 {
+	vec3 i = normalize(fragPosWorld - eye);
+	vec3 n = normalize(fragNormalWorld);
+	vec3 r = normalize(reflect(i, n));
+
     int index = 0;
-    vec2 uv = CubemapUV(v, index);
+    vec2 uv = CubemapUV(normalize(r), index);
 	
 	// vec3(uv coordinates, index at which the correct texture is in the sampler array)
     return texture(captureTex, vec3(uv, index));
+}
+
+vec3 Refraction(vec3 eye, float ratio)
+{
+	vec3 i = normalize(fragPosWorld - ubLights.eyePos.xyz);
+	vec3 n = normalize(fragNormalWorld);
+	vec3 r = vec3(1.0f);
+	
+	vec3 red = refract(i, n, ratio - 0.01f);
+	vec3 green = refract(i, n, ratio);
+	vec3 blue = refract(i, n, ratio + 0.01f);
+	
+	//red.x = -red.x;
+	//green.x = -green.x;
+	//blue.x = -blue.x;
+	//
+	//red.y = -red.y;
+	//green.y = -green.y;
+	//blue.y = -blue.y;
+	
+	r.x = SampleCubemap(red).x;
+	r.y = SampleCubemap(green).y;
+	r.z = SampleCubemap(blue).z;
+	
+	return r;
 }
 
 float attValue(float c1, float c2, float c3, float dist)
@@ -205,5 +234,14 @@ void main()
 		local += LightCalc(i);
 	}
 	
-	outColor = SampleCubemap(fragPos) + 0.1f;
+	vec3 i = normalize(fragPosWorld - ubLights.eyePos.xyz);
+	vec3 n = normalize(fragNormalWorld);
+	float eta = 1.0f / 1.52f;
+	float f = ((1.0f - eta) * (1.0f - eta)) / ((1.0f + eta) * (1.0f + eta));
+	float ratio = f + (1.0f - f) * pow((1.0f - dot(i, n)), 1.0f);
+	
+	
+	
+	outColor = SampleCubemap(ubLights.eyePos.xyz);
+	//outColor = vec4(Refraction(ubLights.eyePos.xyz, eta), 1.0f);
 }
