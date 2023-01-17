@@ -523,6 +523,167 @@ namespace Tendou
         EndSingleTimeCommands(commandBuffer);
     }
 
+    RenderPass TendouDevice::CreateDeferredPass(int width, int height)
+    {
+        RenderPass res;
+
+        res.width = width;
+        res.height = height;
+
+        res.position.format = res.normal.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        res.albedo.format = VK_FORMAT_R8G8B8A8_UNORM;
+
+
+        CreateImage(width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            res.position.image, res.position.memory);
+        res.position.view = CreateImageView(res.position.image, VK_FORMAT_R16G16B16A16_SFLOAT);
+
+        CreateImage(width, height, VK_FORMAT_R16G16B16A16_SFLOAT, VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            res.normal.image, res.normal.memory);
+        res.normal.view = CreateImageView(res.normal.image, VK_FORMAT_R16G16B16A16_SFLOAT);
+
+        CreateImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            res.albedo.image, res.albedo.memory);
+        res.albedo.view = CreateImageView(res.albedo.image, VK_FORMAT_R8G8B8A8_UNORM);
+
+
+        // Find a suitable depth format
+        VkFormat fbDepthFormat = FindSupportedFormat(
+            { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+        res.depth.format = fbDepthFormat;
+
+        // Depth stencil attachment
+        CreateImage(res.width, res.height, fbDepthFormat,
+            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, res.depth.image, res.depth.memory);
+
+        res.depth.view = CreateImageView(res.depth.image,
+            fbDepthFormat, 1, VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+
+        std::array<VkAttachmentDescription, 4> attachmentDescriptions = {};
+
+        for (unsigned i = 0; i < 4; ++i)
+        {
+            attachmentDescriptions[i].samples = VK_SAMPLE_COUNT_1_BIT;
+            attachmentDescriptions[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachmentDescriptions[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachmentDescriptions[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDescriptions[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+            // Not depth attachment
+            if (i != 3)
+            {
+                attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }
+            
+            // Is depth attachment
+            else
+            {
+                attachmentDescriptions[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                attachmentDescriptions[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            }
+        }
+
+        attachmentDescriptions[0].format = res.position.format;
+        attachmentDescriptions[1].format = res.normal.format;
+        attachmentDescriptions[2].format = res.albedo.format;
+        attachmentDescriptions[3].format = res.depth.format;
+
+        std::vector<VkAttachmentReference> colorReferences;
+        colorReferences.push_back({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+        colorReferences.push_back({ 1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+        colorReferences.push_back({ 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+
+        VkAttachmentReference depthReference = {};
+        depthReference.attachment = 3;
+        depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+
+        VkSubpassDescription subpassDesc = {};
+        subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDesc.colorAttachmentCount = static_cast<uint32_t>(colorReferences.size());
+        subpassDesc.pColorAttachments = colorReferences.data();
+        subpassDesc.pDepthStencilAttachment = &depthReference;
+
+        // Use subpass dependencies for layout transitions
+        std::array<VkSubpassDependency, 2> dependencies;
+
+        dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[0].dstSubpass = 0;
+        dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+        dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        dependencies[1].srcSubpass = 0;
+        dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+        dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+        dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        // Create the actual renderpass
+        VkRenderPassCreateInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
+        renderPassInfo.pAttachments = attachmentDescriptions.data();
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpassDesc;
+        renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+        renderPassInfo.pDependencies = dependencies.data();
+
+        vkCreateRenderPass(device_, &renderPassInfo, nullptr, &res.renderPass);
+
+
+        std::array<VkImageView, 4> attachments;
+        attachments[0] = res.position.view;
+        attachments[1] = res.normal.view;
+        attachments[2] = res.albedo.view;
+        attachments[3] = res.depth.view;
+
+        VkFramebufferCreateInfo framebufferInfo = {};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = res.renderPass;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
+        framebufferInfo.width = res.width;
+        framebufferInfo.height = res.height;
+        framebufferInfo.layers = 1;
+        vkCreateFramebuffer(device_, &framebufferInfo, nullptr, &res.frameBuffer);
+
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_NEAREST;
+        samplerInfo.minFilter = VK_FILTER_NEAREST;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = 1.0f;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        if (vkCreateSampler(device_, &samplerInfo, nullptr, &res.sampler) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create render pass sampler!");
+        }
+
+        return res;
+
+    }
+
     // NOTE: This is for render passes specified for rendering textures
     // to existing textures; mostly used to render to cube maps.
     // TODO: Create separate render to texture functions for easier

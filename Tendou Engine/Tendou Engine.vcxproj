@@ -37,12 +37,14 @@
     <ClCompile Include="IO\Mouse.cpp" />
     <ClCompile Include="Rendering\Buffer.cpp" />
     <ClCompile Include="Rendering\Camera.cpp" />
+    <ClCompile Include="Rendering\Scenes\DeferredScene.cpp" />
     <ClCompile Include="Rendering\Scenes\GLTFScene.cpp" />
     <ClCompile Include="Rendering\Scenes\LightingScene.cpp" />
     <ClCompile Include="Rendering\Scenes\SimpleScene.cpp" />
     <ClCompile Include="Vulkan\Descriptor.cpp" />
     <ClCompile Include="Rendering\Model.cpp" />
     <ClCompile Include="Vulkan\Systems\Default.cpp" />
+    <ClCompile Include="Vulkan\Systems\Deferred.cpp" />
     <ClCompile Include="Vulkan\Systems\Offscreen.cpp" />
     <ClCompile Include="Vulkan\Systems\RenderSystem.cpp" />
     <ClCompile Include="Rendering\Scenes\Scene.cpp" />
@@ -71,6 +73,7 @@
     <ClInclude Include="IO\Mouse.h" />
     <ClInclude Include="Rendering\Buffer.h" />
     <ClInclude Include="Rendering\Camera.h" />
+    <ClInclude Include="Rendering\Scenes\DeferredScene.h" />
     <ClInclude Include="Rendering\Scenes\GLTFScene.h" />
     <ClInclude Include="Rendering\Scenes\LightingScene.h" />
     <ClInclude Include="Rendering\Scenes\SimpleScene.h" />
@@ -79,6 +82,7 @@
     <ClInclude Include="Rendering\FrameInfo.h" />
     <ClInclude Include="Rendering\Model.h" />
     <ClInclude Include="Vulkan\Systems\Default.h" />
+    <ClInclude Include="Vulkan\Systems\Deferred.h" />
     <ClInclude Include="Vulkan\Systems\Offscreen.h" />
     <ClInclude Include="Vulkan\Systems\RenderSystem.h" />
     <ClInclude Include="Rendering\Scenes\Scene.h" />

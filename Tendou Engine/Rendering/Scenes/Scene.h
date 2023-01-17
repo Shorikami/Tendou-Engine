@@ -8,6 +8,7 @@
 
 #include "../../Vulkan/Systems/Default.h"
 #include "../../Vulkan/Systems/Offscreen.h"
+#include "../../Vulkan/Systems/Deferred.h"
 
 #include "../../Rendering/Camera.h"
 

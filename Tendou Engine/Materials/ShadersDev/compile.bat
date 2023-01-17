@@ -16,4 +16,8 @@ C:\VulkanSDK\1.3.231.1\Bin\glslc.exe Skybox2.vert -o ../Shaders/Skybox2.vert.spv
 C:\VulkanSDK\1.3.231.1\Bin\glslc.exe Skybox2.frag -o ../Shaders/Skybox2.frag.spv
 C:\VulkanSDK\1.3.231.1\Bin\glslc.exe GLTF.vert -o ../Shaders/GLTF.vert.spv
 C:\VulkanSDK\1.3.231.1\Bin\glslc.exe GLTF.frag -o ../Shaders/GLTF.frag.spv
+C:\VulkanSDK\1.3.231.1\Bin\glslc.exe Deferred\GeometryPass.vert -o ../Shaders/GeometryPass.vert.spv
+C:\VulkanSDK\1.3.231.1\Bin\glslc.exe Deferred\GeometryPass.frag -o ../Shaders/GeometryPass.frag.spv
+C:\VulkanSDK\1.3.231.1\Bin\glslc.exe Deferred\LightingPass.vert -o ../Shaders/LightingPass.vert.spv
+C:\VulkanSDK\1.3.231.1\Bin\glslc.exe Deferred\LightingPass.frag -o ../Shaders/LightingPass.frag.spv
 pause

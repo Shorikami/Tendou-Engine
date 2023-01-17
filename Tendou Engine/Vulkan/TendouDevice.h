@@ -31,13 +31,14 @@ namespace Tendou
         VkImage image;
         VkDeviceMemory memory;
         VkImageView view;
+        VkFormat format;
     };
 
     struct RenderPass
     {
         int32_t width, height;
         VkFramebuffer frameBuffer;
-        FrameBufferAttachment color, depth;
+        FrameBufferAttachment color, position, normal, albedo, depth;
         VkRenderPass renderPass;
         VkSampler sampler;
         VkDescriptorImageInfo descriptor;
@@ -90,6 +91,7 @@ namespace Tendou
 
         // Render Pass Helper Functions
         RenderPass CreateRenderPass(int width, int height);
+        RenderPass CreateDeferredPass(int width, int height);
 
         // Texture/Image Helper Functions
         VkImageView CreateImageView(VkImage image, VkFormat format, 

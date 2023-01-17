@@ -9,6 +9,7 @@
 #include "../Rendering/Scenes/SimpleScene.h"
 #include "../Rendering/Scenes/LightingScene.h"
 #include "../Rendering/Scenes/GLTFScene.h"
+#include "../Rendering/Scenes/DeferredScene.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -25,7 +26,8 @@ namespace Tendou
 	Application::Application()
 	{
 		//scene = std::make_unique<LightingScene>(appWindow, device);
-		scene = std::make_unique<GLTFScene>(appWindow, device);
+		//scene = std::make_unique<GLTFScene>(appWindow, device);
+		scene = std::make_unique<DeferredScene>(appWindow, device);
 		editor = std::make_unique<Editor>(appWindow, scene.get(), device);
 	}
 
