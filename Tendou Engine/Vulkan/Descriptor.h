@@ -80,6 +80,8 @@ namespace Tendou {
         DescriptorPool(const DescriptorPool&) = delete;
         DescriptorPool& operator=(const DescriptorPool&) = delete;
 
+        VkDescriptorPool GetDescriptorPool() { return descriptorPool; }
+
         bool AllocateDescriptor(
             const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet& descriptor) const;
 

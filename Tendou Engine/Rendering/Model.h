@@ -49,7 +49,7 @@ namespace Tendou
 			bool hasNormals = false;
 
 			void LoadOBJ(const std::string& filePath, bool flipY, const std::string& mtlPath = std::string());
-			void LoadGLTF(const std::string& filePath, bool flipY);
+			//void LoadGLTF(const std::string& filePath, bool flipY);
 		};
 
 		template <typename T>

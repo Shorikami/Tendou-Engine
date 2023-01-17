@@ -25,6 +25,7 @@ namespace Tendou
 		VkImage TextureImage() { return textureImage; }
 		VkImageView TextureImageView() { return textureImageView; }
 		VkSampler TextureSampler() { return textureSampler; }
+		VkDeviceMemory TextureMemory() { return textureImageMemory; }
 
 		VkDescriptorImageInfo DescriptorInfo(VkImageLayout out = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 

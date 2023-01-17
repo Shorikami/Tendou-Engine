@@ -47,10 +47,8 @@ namespace Tendou
 		void Unbind(VkCommandBuffer commandBuffer);
 
 		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
-
-	private:
 		static std::vector<char> ReadFile(const std::string& filePath);
-
+	private:
 		void CreateGraphicsPipeline(const std::string& vertPath, 
 			const std::string& fragPath,
 			const PipelineConfigInfo& configInfo);

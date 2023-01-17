@@ -5,12 +5,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#define TINYGLTF_NOEXCEPTION
-#define JSON_NOEXCEPTION
-#include <tiny_gltf.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
@@ -73,15 +67,15 @@ namespace Tendou
 
 		switch (type)
 		{
-		case Type::GLTF:
-		{
-			Builder<Model::Vertex> b{};
-			b.LoadGLTF(filePath, flipY);
-
-			std::cout << "Vertex count: " << b.vertices.size() << std::endl;
-			res = std::make_unique<Model>(device, b);
-			break;
-		}
+		//case Type::GLTF:
+		//{
+		//	Builder<Model::Vertex> b{};
+		//	b.LoadGLTF(filePath, flipY);
+		//
+		//	std::cout << "Vertex count: " << b.vertices.size() << std::endl;
+		//	res = std::make_unique<Model>(device, b);
+		//	break;
+		//}
 		default:
 			Builder<Model::Vertex> builder{};
 			builder.LoadOBJ(filePath, flipY, mtlPath);
@@ -337,36 +331,36 @@ namespace Tendou
 		}
 	}
 
-	template <typename T>
-	void Model::Builder<T>::LoadGLTF(const std::string& f, bool flipY)
-	{
-		tinygltf::Model model;
-		tinygltf::TinyGLTF loader;
-		std::string err;
-		std::string warn;
-
-		bool res = loader.LoadASCIIFromFile(&model, &err, &warn, f);
-
-		if (!warn.empty()) 
-		{
-			std::cout << "WARN: " << warn << std::endl;
-		}
-
-		if (!err.empty()) 
-		{
-			std::cout << "ERR: " << err << std::endl;
-		}
-
-		if (!res)
-			std::cout << "Failed to load glTF: " << f << std::endl;
-		else
-			std::cout << "Loaded glTF: " << f << std::endl;
-
-		const tinygltf::Scene& scene = model.scenes[model.defaultScene];
-
-		for (size_t i = 0; i < scene.nodes.size(); ++i)
-		{
-			assert((scene.nodes[i] >= 0) && (scene.nodes[i] < model.nodes.size()));
-		}
-	}
+	//template <typename T>
+	//void Model::Builder<T>::LoadGLTF(const std::string& f, bool flipY)
+	//{
+	//	tinygltf::Model model;
+	//	tinygltf::TinyGLTF loader;
+	//	std::string err;
+	//	std::string warn;
+	//
+	//	bool res = loader.LoadASCIIFromFile(&model, &err, &warn, f);
+	//
+	//	if (!warn.empty()) 
+	//	{
+	//		std::cout << "WARN: " << warn << std::endl;
+	//	}
+	//
+	//	if (!err.empty()) 
+	//	{
+	//		std::cout << "ERR: " << err << std::endl;
+	//	}
+	//
+	//	if (!res)
+	//		std::cout << "Failed to load glTF: " << f << std::endl;
+	//	else
+	//		std::cout << "Loaded glTF: " << f << std::endl;
+	//
+	//	const tinygltf::Scene& scene = model.scenes[model.defaultScene];
+	//
+	//	for (size_t i = 0; i < scene.nodes.size(); ++i)
+	//	{
+	//		assert((scene.nodes[i] >= 0) && (scene.nodes[i] < model.nodes.size()));
+	//	}
+	//}
 }

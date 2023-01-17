@@ -37,6 +37,7 @@
     <ClCompile Include="IO\Mouse.cpp" />
     <ClCompile Include="Rendering\Buffer.cpp" />
     <ClCompile Include="Rendering\Camera.cpp" />
+    <ClCompile Include="Rendering\Scenes\GLTFScene.cpp" />
     <ClCompile Include="Rendering\Scenes\LightingScene.cpp" />
     <ClCompile Include="Rendering\Scenes\SimpleScene.cpp" />
     <ClCompile Include="Vulkan\Descriptor.cpp" />
@@ -70,6 +71,7 @@
     <ClInclude Include="IO\Mouse.h" />
     <ClInclude Include="Rendering\Buffer.h" />
     <ClInclude Include="Rendering\Camera.h" />
+    <ClInclude Include="Rendering\Scenes\GLTFScene.h" />
     <ClInclude Include="Rendering\Scenes\LightingScene.h" />
     <ClInclude Include="Rendering\Scenes\SimpleScene.h" />
     <ClInclude Include="Rendering\UniformBuffer.hpp" />

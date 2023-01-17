@@ -126,7 +126,6 @@ namespace Tendou
 		{
 			throw std::runtime_error("Failed to begin recording command buffer!");
 		}
-
 		return cmdBuf;
 	}
 

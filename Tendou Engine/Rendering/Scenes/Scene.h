@@ -5,7 +5,6 @@
 #include "../../Vulkan/SwapChain.h"
 #include "../../Vulkan/TendouDevice.h"
 #include "../../Vulkan/Descriptor.h"
-#include "../../Vulkan/TendouDevice.h"
 
 #include "../../Vulkan/Systems/Default.h"
 #include "../../Vulkan/Systems/Offscreen.h"
