@@ -9,10 +9,10 @@
 #include <memory>
 #include <vector>
 
-#define MAX_LIGHTS 16
-
 namespace Tendou
 {
+#define MAX_LIGHTS 10
+
 	class DeferredScene : public Scene
 	{
 	public:
@@ -55,10 +55,11 @@ namespace Tendou
 		void CreateRenderSystems();
 
 		std::unique_ptr<UniformBuffer<WorldUBO>> worldUBO;
-		std::unique_ptr<UniformBuffer<LightsUBO>> lightUBO;
+		std::unique_ptr<UniformBuffer<LightPassUBO>> lightingPass;
 		std::vector<std::unique_ptr<Texture>> textures;
 
-		size_t testOffset;
+		GameObject::Map localLights;
+		Tendou::Light lightValues[MAX_LIGHTS];
 	};
 }
 

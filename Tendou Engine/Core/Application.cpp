@@ -20,6 +20,7 @@
 #include <array>
 #include <cassert>
 #include <chrono>
+#include <time.h>
 
 namespace Tendou
 {
@@ -37,6 +38,7 @@ namespace Tendou
 
 	void Application::Run()
 	{
+		srand(time(NULL));
 		scene->Init();
 
 		auto currTime = std::chrono::high_resolution_clock::now();

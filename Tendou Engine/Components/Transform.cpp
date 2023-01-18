@@ -36,8 +36,9 @@ namespace Tendou
 			modelMat = glm::rotate(modelMat, angleOfRotation, rotation);
 		}
 
-		modelMat = glm::scale(modelMat, scale)
-			* glm::translate(modelMat, translation);
+		// Translate then scale, or vice-versa?
+		modelMat = glm::translate(modelMat, translation);
+		modelMat = glm::scale(modelMat, scale);
 	}
 
 	const glm::vec3 Transform::PositionVec3()

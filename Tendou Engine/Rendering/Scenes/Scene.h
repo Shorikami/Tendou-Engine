@@ -9,6 +9,8 @@
 #include "../../Vulkan/Systems/Default.h"
 #include "../../Vulkan/Systems/Offscreen.h"
 #include "../../Vulkan/Systems/Deferred.h"
+#include "../../Vulkan/Systems/Geometry.h"
+#include "../../Vulkan/Systems/LocalLights.h"
 
 #include "../../Rendering/Camera.h"
 
@@ -87,7 +89,7 @@ namespace Tendou
 		void ProcessInput(float dt, Camera& c);
 		void ProcessMouse(float x, float y, Camera& c);
 
-		void BeginRenderPass(VkCommandBuffer cmdBuf, std::string key);
+		void BeginRenderPass(VkCommandBuffer cmdBuf, std::string key, std::vector<VkClearValue> clearValues = std::vector<VkClearValue>());
 		void EndRenderPass(VkCommandBuffer cmdBuf);
 
 		void BeginSwapChainRenderPass(VkCommandBuffer cmdBuf);

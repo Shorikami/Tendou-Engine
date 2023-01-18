@@ -9,8 +9,6 @@
 #include <memory>
 #include <vector>
 
-#define MAX_LIGHTS 16
-
 namespace Tendou
 {
 	class LightingScene : public Scene

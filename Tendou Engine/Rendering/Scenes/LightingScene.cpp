@@ -45,7 +45,7 @@ namespace Tendou
 		CreateSetLayouts();
 		CreateRenderSystems();
 
-		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
+		for (unsigned i = 0; i < 16; ++i)
 		{
 			editorVars.ambient[i] = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
 			editorVars.diffuse[i] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -328,7 +328,7 @@ namespace Tendou
 		model = Model::CreateModelFromFile(device, Model::Type::OBJ,
 			"Materials/Models/sphere.obj", std::string(), true);
 
-		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
+		for (unsigned i = 0; i < 16; ++i)
 		{
 			auto sphere = GameObject::CreateGameObject("Light", "Sphere");
 			sphere.SetModel(model);

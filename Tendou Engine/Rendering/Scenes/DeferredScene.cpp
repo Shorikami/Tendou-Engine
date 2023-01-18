@@ -19,24 +19,35 @@ namespace Tendou
 	// TODO: More abstraction
 	DeferredScene::~DeferredScene()
 	{
-		// Frame buffer
-		for (int i = 0; i < 6; ++i)
-		{
-			std::string key = std::string("Offscreen") + std::to_string(i + 1);
-			// Color attachment
-			vkDestroyImageView(device.Device(), renderPasses[key].color.view, nullptr);
-			vkDestroyImage(device.Device(), renderPasses[key].color.image, nullptr);
-			vkFreeMemory(device.Device(), renderPasses[key].color.memory, nullptr);
+		// Position
+		vkDestroyImageView(device.Device(), renderPasses["Geometry"].position.view, nullptr);
+		vkDestroyImage(device.Device(), renderPasses["Geometry"].position.image, nullptr);
+		vkFreeMemory(device.Device(), renderPasses["Geometry"].position.memory, nullptr);
 
-			// Depth attachment
-			vkDestroyImageView(device.Device(), renderPasses[key].depth.view, nullptr);
-			vkDestroyImage(device.Device(), renderPasses[key].depth.image, nullptr);
-			vkFreeMemory(device.Device(), renderPasses[key].depth.memory, nullptr);
+		// Normal
+		vkDestroyImageView(device.Device(), renderPasses["Geometry"].normal.view, nullptr);
+		vkDestroyImage(device.Device(), renderPasses["Geometry"].normal.image, nullptr);
+		vkFreeMemory(device.Device(), renderPasses["Geometry"].normal.memory, nullptr);
 
-			vkDestroyRenderPass(device.Device(), renderPasses[key].renderPass, nullptr);
-			vkDestroySampler(device.Device(), renderPasses[key].sampler, nullptr);
-			vkDestroyFramebuffer(device.Device(), renderPasses[key].frameBuffer, nullptr);
-		}
+		// Albedo
+		vkDestroyImageView(device.Device(), renderPasses["Geometry"].albedo.view, nullptr);
+		vkDestroyImage(device.Device(), renderPasses["Geometry"].albedo.image, nullptr);
+		vkFreeMemory(device.Device(), renderPasses["Geometry"].albedo.memory, nullptr);
+
+		// Depth attachment
+		vkDestroyImageView(device.Device(), renderPasses["Geometry"].depth.view, nullptr);
+		vkDestroyImage(device.Device(), renderPasses["Geometry"].depth.image, nullptr);
+		vkFreeMemory(device.Device(), renderPasses["Geometry"].depth.memory, nullptr);
+
+		// Render pass/frame buffer
+		vkDestroyRenderPass(device.Device(), renderPasses["Geometry"].renderPass, nullptr);
+		vkDestroySampler(device.Device(), renderPasses["Geometry"].sampler, nullptr);
+		vkDestroyFramebuffer(device.Device(), renderPasses["Geometry"].frameBuffer, nullptr);
+	}
+
+	float RandomNum(float min, float max)
+	{
+		return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (max - min)));
 	}
 
 	int DeferredScene::Init()
@@ -45,18 +56,34 @@ namespace Tendou
 		CreateSetLayouts();
 		CreateRenderSystems();
 
+		LightPassUBO passUBO{};
+		passUBO.eyePos = glm::vec4(c.cameraPos, 1.0f);
+
 		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
 		{
-			editorVars.ambient[i] = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
-			editorVars.diffuse[i] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-			editorVars.specular[i] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			passUBO.lights[i].pos = lightValues[i].pos;
+			passUBO.lights[i].color = lightValues[i].color;
+			passUBO.lights[i].radius = lightValues[i].radius;
 		}
+		lightingPass->WriteToBuffer(&passUBO);
+		lightingPass->Flush();
+
+		//for (unsigned i = 0; i < MAX_LIGHTS; ++i)
+		//{
+		//	editorVars.ambient[i] = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+		//	editorVars.diffuse[i] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+		//	editorVars.specular[i] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		//}
 
 		return 0;
 	}
 
 	int DeferredScene::PreUpdate()
 	{
+		ImGui::Text("Camera X: %f", c.cameraPos.x);
+		ImGui::Text("Camera Y: %f", c.cameraPos.y);
+		ImGui::Text("Camera Z: %f", c.cameraPos.z);
+
 		if (ImGui::BeginMenu("Scene Settings"))
 		{
 			ImGui::SliderInt("No. of Lights", &editorVars.currLights, 1, 16);
@@ -109,60 +136,22 @@ namespace Tendou
 		static float angle = 0.0f;
 		int idx = 0;
 
-		//LightsUBO lightUbo{};
-		//lightUbo.eyePos = glm::vec4(c.cameraPos, 1.0f);
-		//
-		//for (unsigned i = 0; i < editorVars.currLights; ++i)
-		//{
-		//	lightUbo.lightColor[i] = glm::vec4(1.0f);
-		//
-		//	lightUbo.ambient[i] = glm::vec4(editorVars.ambient[i], 1.0f);
-		//	lightUbo.diffuse[i] = glm::vec4(editorVars.diffuse[i], 1.0f);
-		//	lightUbo.specular[i] = glm::vec4(editorVars.specular[i], 1.0f);
-		//
-		//	// x = outer, y = inner, z = falloff, w = type
-		//	lightUbo.lightInfo[i] = glm::vec4(80.0f, 45.0f, 10.0f, 0.0f);
-		//}
-		//
-		//lightUbo.emissive = glm::vec4(editorVars.emissive, 1.0f);
-		//lightUbo.attenuation = editorVars.attenuation;
-		//
-		//lightUbo.coefficients = glm::vec4(editorVars.lightCoeffs, 1.0f);
-		//lightUbo.fogColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		//lightUbo.numLights = editorVars.currLights;
-		//
-		//// x = use gpu, y = use normals, z = uv type
-		//lightUbo.modes = glm::ivec4(0, 0, 0, 0);
+		LightPassUBO passUBO{};
+		passUBO.eyePos = glm::vec4(c.cameraPos, 1.0f);
 
-		// TODO: IDs to string tags?
-		GameObject& mainObj = gameObjects.find(0)->second;
+		for (unsigned i = 0; i < MAX_LIGHTS; ++i)
+		{
+			passUBO.lights[i].pos = lightValues[i].pos;
+			passUBO.lights[i].color = lightValues[i].color;
+			passUBO.lights[i].radius = lightValues[i].radius;
+		}
+		lightingPass->WriteToBuffer(&passUBO);
+		lightingPass->Flush();
 
 		for (auto& a : gameObjects)
 		{
 			auto& obj = a.second;
-			if (obj.GetTag() == "Light")
-			{
-				if (idx >= editorVars.currLights)
-				{
-					obj.SetRender(false);
-				}
-				else
-				{
-					obj.SetRender(true);
-				}
-
-				float res = angle + (glm::pi<float>() / static_cast<float>(editorVars.currLights)) * idx;
-				obj.GetTransform().SetTranslation(glm::vec3(0.0f, 0.0f, editorVars.sphereLineRad));
-				obj.GetTransform().SetRotationAngle(res);
-				obj.GetTransform().Update(true);
-				//lightUbo.lightPos[idx] = obj.GetTransform().PositionVec4();
-				//lightUbo.lightDir[idx] = mainObj.GetTransform().PositionVec4() - lightUbo.lightPos[idx];
-				++idx;
-			}
-			else
-			{
-				obj.GetTransform().Update();
-			}
+			obj.GetTransform().Update();
 		}
 
 		WorldUBO localUBO{};
@@ -197,59 +186,74 @@ namespace Tendou
 
 	int DeferredScene::Render(VkCommandBuffer buf, FrameInfo& f)
 	{
-		SceneInfo deferred(GetDescriptorSet("Deferred"), GetGameObjects());
-		SceneInfo global(GetDescriptorSet("Global"), GetGameObjects());
+		SceneInfo lighting(GetDescriptorSet("Lighting"), GetGameObjects());
+		SceneInfo geometry(GetDescriptorSet("Geometry"), GetGameObjects());
+		SceneInfo lights(GetDescriptorSet("LocalLights"), localLights);
 
-		BeginRenderPass(buf, "Deferred");
-		renderSystems["Deferred"][0].get()->Render(f, deferred);
+		std::vector<VkClearValue> clearValues(4);
+		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+		clearValues[1].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+		clearValues[2].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+		clearValues[3].depthStencil = { 1.0f, 0 };
+
+		BeginRenderPass(buf, "Geometry", clearValues);
+		renderSystems["Geometry"][0].get()->Render(f, geometry);
 		EndRenderPass(buf);
+
+		//BeginRenderPass(buf, "Lighting", clearValues);
+		//renderSystems["Lighting"][0].get()->Render(f, lighting);
+		//EndRenderPass(buf);
 
 		// Render the actual scene (swapchain)
 		BeginSwapChainRenderPass(buf);
 
-		renderSystems["Global"][0].get()->Render(f, global);
+		renderSystems["Lighting"][0].get()->Render(f, lighting);
+		renderSystems["LocalLights"][0].get()->Render(f, lights);
 
 		return 0;
 	}
 
 	void DeferredScene::LoadGameObjects()
 	{
-		std::shared_ptr<Model> model = Model::CreateModelFromFile(device, Model::Type::OBJ,
-			"Materials/Models/smooth_vase.obj");
+		for (int i = 0; i < 6; ++i)
+		{
+			std::shared_ptr<Model> model = Model::CreateModelFromFile(device, Model::Type::OBJ,
+				"Materials/Models/BA/Misaki/Mesh/Misaki_Original_Weapon.obj",
+				"Materials/Models/BA/Misaki/Mesh/Texture2D/", true);
 
-		auto whiteFang = GameObject::CreateGameObject("TextureTarget", "Vase");
-		whiteFang.SetModel(model);
-		whiteFang.GetTransform().SetTranslation(glm::vec3(0.f));
-		whiteFang.GetTransform().SetRotation(glm::vec3(0.0f, 0.5f, 0.0f));
-		whiteFang.GetTransform().SetScale(glm::vec3(5.5f));
+			auto whiteFang = GameObject::CreateGameObject("Model", "WhiteFang556");
+			whiteFang.SetModel(model);
+			whiteFang.GetTransform().SetTranslation(glm::vec3((i % 3) * 10.0f + 0.f, 0.0f, i >= 3 ? 0.0f : 5.0f));
+			whiteFang.GetTransform().SetRotation(glm::vec3(0.0f, 0.5f, 0.0f));
+			whiteFang.GetTransform().SetScale(glm::vec3(10.0f));
 
-		gameObjects.emplace(whiteFang.GetID(), std::move(whiteFang));
+			gameObjects.emplace(whiteFang.GetID(), std::move(whiteFang));
+		}
 
+		for (int i = 0; i < MAX_LIGHTS; ++i)
+		{
+			float xPos = RandomNum(-20.0f, 20.0f);
+			float yPos = RandomNum(-10.0f, 10.0f);
+			float zPos = RandomNum(-10.0f, 10.0f);
 
-		//model = Model::CreateModelFromFile(device, Model::Type::OBJ,
-		//	"Materials/Models/sphere.obj", std::string(), true);
-		//
-		//for (unsigned i = 0; i < MAX_LIGHTS; ++i)
-		//{
-		//	auto sphere = GameObject::CreateGameObject("Light", "Sphere");
-		//	sphere.SetModel(model);
-		//	sphere.GetTransform().SetTranslation(glm::vec3(0.0f, 0.0f, editorVars.sphereLineRad));
-		//	sphere.GetTransform().SetRotation(glm::vec3(0.0f, 1.0f, 0.0f));
-		//	sphere.GetTransform().SetScale(glm::vec3(0.08f));
-		//
-		//	gameObjects.emplace(sphere.GetID(), std::move(sphere));
-		//}
-		//
-		//model = Model::CreateModelFromFile(device, Model::Type::OBJ,
-		//	"Materials/Models/cube.obj", std::string(), true);
-		//
-		//auto skybox = GameObject::CreateGameObject("Skybox", "Sky");
-		//skybox.SetModel(model);
-		//skybox.GetTransform().SetTranslation(glm::vec3(0.f));
-		////skybox.GetTransform().SetRotation(glm::vec3(0.0f, 0.5f, 0.0f));
-		//skybox.GetTransform().SetScale(glm::vec3(50.0f));
-		//
-		//gameObjects.emplace(skybox.GetID(), std::move(skybox));
+			float r = RandomNum(0.0f, 1.0f);
+			float g = RandomNum(0.0f, 1.0f);
+			float b = RandomNum(0.0f, 1.0f);
+
+			lightValues[i].pos = glm::vec4(xPos, yPos, zPos, 1.0f);
+			lightValues[i].color = glm::vec3(r, g, b);
+			lightValues[i].radius = 3.0f;
+
+			std::shared_ptr<Model> light = Model::CreateModelFromFile(device, Model::Type::OBJ, "Materials/Models/sphere.obj");
+			
+			auto cube = GameObject::CreateGameObject("Light", "CubeLight");
+			cube.SetModel(light);
+			cube.GetTransform().SetTranslation(glm::vec3(lightValues[i].pos));
+			cube.GetTransform().SetRotation(glm::vec3(0.0f, 0.5f, 0.0f));
+			cube.GetTransform().SetScale(glm::vec3(0.1f));
+			
+			localLights.emplace(cube.GetID(), std::move(cube));
+		}
 	}
 
 	void DeferredScene::CreateUBOs()
@@ -263,97 +267,133 @@ namespace Tendou
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		worldUBO->Map();
 
-		lightUBO = std::make_unique<UniformBuffer<LightsUBO>>(
-			UBO::Type::LIGHTS,
+		lightingPass = std::make_unique<UniformBuffer<LightPassUBO>>(
+			UBO::Type::LIGHTPASS,
 			device,
-			UBO::SizeofUBO(UBO::Type::LIGHTS),
+			UBO::SizeofUBO(UBO::Type::LIGHTPASS),
 			1,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		lightUBO->Map();
-
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			);
+		lightingPass->Map();
 	}
 
 	void DeferredScene::CreateSetLayouts()
 	{
-		//std::string path = "Materials/Textures/skybox/skybox_";
-		//std::vector<std::string> faces =
-		//{
-		//	path + std::string("right.png"),
-		//	path + std::string("left.png"),
-		//	path + std::string("top.png"),
-		//	path + std::string("bottom.png"),
-		//	path + std::string("front.png"),
-		//	path + std::string("back.png"),
-		//};
-		//
-		//textures.push_back(std::make_unique<Texture>(device, "Materials/Models/Shiroko/Texture2D/Shiroko_Original_Weapon.png"));
-		//textures.push_back(std::make_unique<Texture>(device, "Materials/Textures/hoshino.png"));
-		//textures.push_back(std::make_unique<Texture>(device, faces));
-		//textures.push_back(std::make_unique<Texture>(device, 1024, 1024, true));
+		textures.push_back(std::make_unique<Texture>(device, "Materials/Models/BA/Misaki/Texture2D/Misaki_Original_Weapon.png"));
+		auto texInfo = textures[0]->DescriptorInfo();
 
-		setLayouts["Global"] = DescriptorSetLayout::Builder(device)
+		setLayouts["Geometry"] = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			//.AddBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			//.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			//.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			//.AddBinding(5, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
 			.Build();
 
-		setLayouts["Deferred"] = DescriptorSetLayout::Builder(device)
+		setLayouts["Lighting"] = DescriptorSetLayout::Builder(device)
+			.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			//.AddBinding(5, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
+			//.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.Build();
+
+		setLayouts["LocalLights"] = DescriptorSetLayout::Builder(device)
 			.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.AddBinding(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			//.AddBinding(5, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_VERTEX_BIT)
 			//.AddBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.Build();
 
 		auto worldBuf = worldUBO->DescriptorInfo();
-		auto lightBuf = lightUBO->DescriptorInfo();
+		auto lightPassBuf = lightingPass->DescriptorInfo();
 
 		//auto whiteFangTex = textures[0]->DescriptorInfo();
 		//auto hoshino = textures[1]->DescriptorInfo();
 		//auto skyboxTex = textures[2]->DescriptorInfo();
 		//auto emptyMap = textures[3]->DescriptorInfo();
 
-		descriptorSets["Global"].resize(1);
-		descriptorSets["Deferred"].resize(1);
+		descriptorSets["Geometry"].resize(1);
+		descriptorSets["Lighting"].resize(1);
+		descriptorSets["LocalLights"].resize(1);
 
 		// Object set
-		DescriptorWriter(*setLayouts["Global"], *globalPool)
+		DescriptorWriter(*setLayouts["Geometry"], *globalPool)
 			.WriteBuffer(0, &worldBuf)
+			.WriteImage(1, &texInfo)
 			//.WriteBuffer(1, &lightBuf)
 			//.WriteImage(2, &emptyMap)
-			.Build(descriptorSets["Global"][0]);
+			.Build(descriptorSets["Geometry"][0]);
 
-		// Object set
-		DescriptorWriter(*setLayouts["Deferred"], *globalPool)
-			.WriteBuffer(0, &worldBuf)
+
+		auto posTex = VkDescriptorImageInfo{ renderPasses["Geometry"].sampler,
+			renderPasses["Geometry"].position.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+
+		auto normalTex = VkDescriptorImageInfo{ renderPasses["Geometry"].sampler,
+			renderPasses["Geometry"].normal.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+
+		auto albedoTex = VkDescriptorImageInfo{ renderPasses["Geometry"].sampler,
+			renderPasses["Geometry"].albedo.view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+
+		DescriptorWriter(*setLayouts["Lighting"], *globalPool)
+			.WriteImage(0, &posTex)
+			.WriteImage(1, &normalTex)
+			.WriteImage(2, &albedoTex)
+			.WriteBuffer(3, &lightPassBuf)
 			//.WriteBuffer(1, &lightBuf)
 			//.WriteImage(2, &emptyMap)
-			.Build(descriptorSets["Deferred"][0]);
+			.Build(descriptorSets["Lighting"][0]);
+
+		DescriptorWriter(*setLayouts["LocalLights"], *globalPool)
+			.WriteBuffer(0, &worldBuf)
+			.WriteImage(1, &posTex)
+			.WriteImage(2, &normalTex)
+			.WriteImage(3, &albedoTex)
+			.WriteBuffer(4, &lightPassBuf)
+			//.WriteBuffer(1, &lightBuf)
+			//.WriteImage(2, &emptyMap)
+			.Build(descriptorSets["LocalLights"][0]);
 	}
 
 	void DeferredScene::CreateRenderPasses()
 	{
-		renderPasses["Deferred"] = device.CreateDeferredPass(
+		renderPasses["Geometry"] = device.CreateDeferredPass(
+			swapChain.get()->GetSwapChainExtent().width,
+			swapChain.get()->GetSwapChainExtent().height);
+
+		renderPasses["Lighting"] = device.CreateRenderPass(
 			swapChain.get()->GetSwapChainExtent().width,
 			swapChain.get()->GetSwapChainExtent().height);
 	}
 
 	void DeferredScene::CreateRenderSystems()
 	{
-		renderSystems["Global"].reserve(1);
-		renderSystems["Deferred"].reserve(1);
+		renderSystems["Geometry"].reserve(1);
+		renderSystems["Lighting"].reserve(1);
+		renderSystems["LocalLights"].reserve(1);
 
-		renderSystems["Global"].emplace_back(std::make_unique<DefaultSystem>(
+		renderSystems["Geometry"].emplace_back(std::make_unique<GeometrySystem>(
 			device,
-			GetSwapChainRenderPass(),
-			GetSetLayout("Global")->GetDescriptorSetLayout()
+			renderPasses["Geometry"].renderPass,
+			GetSetLayout("Geometry")->GetDescriptorSetLayout()
 		));
 
-		renderSystems["Deferred"].emplace_back(std::make_unique<DeferredSystem>(
+		renderSystems["Lighting"].emplace_back(std::make_unique<DeferredSystem>(
 			device,
 			GetSwapChainRenderPass(),
-			GetSetLayout("Deferred")->GetDescriptorSetLayout()
+			GetSetLayout("Lighting")->GetDescriptorSetLayout()
+			));
+
+		renderSystems["LocalLights"].emplace_back(std::make_unique<LocalLightSystem>(
+			device,
+			GetSwapChainRenderPass(),
+			GetSetLayout("LocalLights")->GetDescriptorSetLayout()
 			));
 	}
 }

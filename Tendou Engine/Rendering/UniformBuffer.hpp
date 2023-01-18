@@ -47,13 +47,38 @@ namespace Tendou
 		//float _pad; // std140 requires padding - vec4 = 16 bytes, vec3 + float == 12 + 4 = 16 bytes
 	};
 
+	struct Light
+	{
+		glm::vec4 pos;
+		glm::vec3 color;
+		float radius;
+	};
+
+	class LightPassUBO
+	{
+	public:
+		Light lights[10] = {};
+		glm::vec4 eyePos = {};
+		int displayTarget = 0;
+	};
+
+	class LocalLightUBO
+	{
+	public:
+		glm::vec4 pos = {};
+		glm::vec3 color = {};
+		float radius = 0.0f;
+	};
+
 	namespace UBO
 	{
 		enum class Type
 		{
 			WORLD = 0,
 			LIGHTS,
-			CAPTURE
+			CAPTURE,
+			LIGHTPASS,
+			LOCALLIGHT
 		};
 
 		static uint32_t SizeofUBO(Type t)
@@ -68,6 +93,12 @@ namespace Tendou
 				break;
 			case Type::CAPTURE:
 				return sizeof(glm::mat4) * 2;
+				break;
+			case Type::LIGHTPASS:
+				return sizeof(LightPassUBO);
+				break;
+			case Type::LOCALLIGHT:
+				return sizeof(LocalLightUBO);
 				break;
 			}
 			return 0;

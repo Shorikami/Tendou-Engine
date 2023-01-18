@@ -45,6 +45,8 @@
     <ClCompile Include="Rendering\Model.cpp" />
     <ClCompile Include="Vulkan\Systems\Default.cpp" />
     <ClCompile Include="Vulkan\Systems\Deferred.cpp" />
+    <ClCompile Include="Vulkan\Systems\Geometry.cpp" />
+    <ClCompile Include="Vulkan\Systems\LocalLights.cpp" />
     <ClCompile Include="Vulkan\Systems\Offscreen.cpp" />
     <ClCompile Include="Vulkan\Systems\RenderSystem.cpp" />
     <ClCompile Include="Rendering\Scenes\Scene.cpp" />
@@ -83,6 +85,8 @@
     <ClInclude Include="Rendering\Model.h" />
     <ClInclude Include="Vulkan\Systems\Default.h" />
     <ClInclude Include="Vulkan\Systems\Deferred.h" />
+    <ClInclude Include="Vulkan\Systems\Geometry.h" />
+    <ClInclude Include="Vulkan\Systems\LocalLights.h" />
     <ClInclude Include="Vulkan\Systems\Offscreen.h" />
     <ClInclude Include="Vulkan\Systems\RenderSystem.h" />
     <ClInclude Include="Rendering\Scenes\Scene.h" />

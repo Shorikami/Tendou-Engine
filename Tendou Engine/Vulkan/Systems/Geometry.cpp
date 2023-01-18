@@ -1,4 +1,4 @@
-#include "Deferred.h"
+#include "Geometry.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -17,14 +17,14 @@ namespace Tendou
 		glm::mat4 normalMatrix{ 1.0f };
 	};
 
-	DeferredSystem::DeferredSystem(TendouDevice& device, VkRenderPass pass, VkDescriptorSetLayout set)
+	GeometrySystem::GeometrySystem(TendouDevice& device, VkRenderPass pass, VkDescriptorSetLayout set)
 		: RenderSystem(device)
 	{
 		CreatePipelineLayout(set);
 		CreatePipeline(pass);
 	}
 
-	void DeferredSystem::CreatePipelineLayout(VkDescriptorSetLayout v)
+	void GeometrySystem::CreatePipelineLayout(VkDescriptorSetLayout v)
 	{
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -46,30 +46,65 @@ namespace Tendou
 		}
 	}
 
-	void DeferredSystem::CreatePipeline(VkRenderPass pass)
+	void GeometrySystem::CreatePipeline(VkRenderPass pass)
 	{
 		assert(layout != nullptr && "Cannot create pipeline before layout!");
+		VkPipelineColorBlendAttachmentState state{};
+		state.colorWriteMask = 0xf;
+		state.blendEnable = false;
+
+		std::array<VkPipelineColorBlendAttachmentState, 3> blendAttachmentStates = 
+		{
+			state,
+			state,
+			state
+		};
 
 		PipelineConfigInfo pipelineConfig{};
 		Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
 		pipelineConfig.renderPass = pass;
 		pipelineConfig.pipelineLayout = layout;
+		pipelineConfig.colorBlendInfo.attachmentCount = static_cast<uint32_t>(blendAttachmentStates.size());
+		pipelineConfig.colorBlendInfo.pAttachments = blendAttachmentStates.data();
 
 		pipeline.push_back(std::make_shared<Pipeline>(device,
-			"Materials/Shaders/LightingPass.vert.spv",
-			"Materials/Shaders/LightingPass.frag.spv",
+			"Materials/Shaders/GeometryPass.vert.spv",
+			"Materials/Shaders/GeometryPass.frag.spv",
 			pipelineConfig));
 	}
 
-	void DeferredSystem::Render(FrameInfo& frame, SceneInfo& scene)
+	void GeometrySystem::Render(FrameInfo& frame, SceneInfo& scene)
 	{
 		vkCmdBindDescriptorSets(frame.commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			layout, 0, 1, &scene.descriptorSets[0],
 			0, nullptr);
 
-		pipeline[0]->Bind(frame.commandBuffer);
+		for (auto& kv : scene.gameObjects)
+		{
+			auto& obj = kv.second;
+			if (obj.GetModel() == nullptr)
+			{
+				continue;
+			}
 
-		vkCmdDraw(frame.commandBuffer, 3, 1, 0, 0);
+			PushConstantData push{};
+			push.modelMatrix = obj.GetTransform().ModelMat();
+			push.normalMatrix = obj.GetTransform().NormalMatrix();
+
+			// NOTE: RenderDoc push constant calls are coming from
+			// the unrenderable lights
+			vkCmdPushConstants(frame.commandBuffer,
+				layout,
+				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+				0,
+				sizeof(PushConstantData),
+				&push);
+
+			pipeline[0]->Bind(frame.commandBuffer);
+
+			obj.GetModel()->Bind(frame.commandBuffer);
+			obj.GetModel()->Draw(frame.commandBuffer);
+		}
 	}
 }

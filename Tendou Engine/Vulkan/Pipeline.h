@@ -47,6 +47,8 @@ namespace Tendou
 		void Unbind(VkCommandBuffer commandBuffer);
 
 		static void DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
+		static void EnableAlphaBlending(PipelineConfigInfo& configInfo);
+
 		static std::vector<char> ReadFile(const std::string& filePath);
 	private:
 		void CreateGraphicsPipeline(const std::string& vertPath, 

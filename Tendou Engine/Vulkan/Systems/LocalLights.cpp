@@ -1,4 +1,4 @@
-#include "Deferred.h"
+#include "LocalLights.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -11,25 +11,27 @@
 
 namespace Tendou
 {
-	struct PushConstantData
+	struct LocalLightData
 	{
 		glm::mat4 modelMatrix{ 1.0f };
-		glm::mat4 normalMatrix{ 1.0f };
+		glm::vec4 position{ 1.0f };
+		glm::vec3 color{ 1.0f };
+		float range = 0.0f;
 	};
 
-	DeferredSystem::DeferredSystem(TendouDevice& device, VkRenderPass pass, VkDescriptorSetLayout set)
+	LocalLightSystem::LocalLightSystem(TendouDevice& device, VkRenderPass pass, VkDescriptorSetLayout set)
 		: RenderSystem(device)
 	{
 		CreatePipelineLayout(set);
 		CreatePipeline(pass);
 	}
 
-	void DeferredSystem::CreatePipelineLayout(VkDescriptorSetLayout v)
+	void LocalLightSystem::CreatePipelineLayout(VkDescriptorSetLayout v)
 	{
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(PushConstantData);
+		pushConstantRange.size = sizeof(LocalLightData);
 
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ v };
 
@@ -46,30 +48,60 @@ namespace Tendou
 		}
 	}
 
-	void DeferredSystem::CreatePipeline(VkRenderPass pass)
+	void LocalLightSystem::CreatePipeline(VkRenderPass pass)
 	{
 		assert(layout != nullptr && "Cannot create pipeline before layout!");
 
 		PipelineConfigInfo pipelineConfig{};
 		Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
+		Pipeline::EnableAlphaBlending(pipelineConfig);
 		pipelineConfig.renderPass = pass;
 		pipelineConfig.pipelineLayout = layout;
 
+		pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+		pipelineConfig.depthStencilInfo.depthTestEnable = VK_FALSE;
+		//pipelineConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE;
+
 		pipeline.push_back(std::make_shared<Pipeline>(device,
-			"Materials/Shaders/LightingPass.vert.spv",
-			"Materials/Shaders/LightingPass.frag.spv",
+			"Materials/Shaders/LightingPassLight.vert.spv",
+			"Materials/Shaders/LightingPassLight.frag.spv",
 			pipelineConfig));
 	}
 
-	void DeferredSystem::Render(FrameInfo& frame, SceneInfo& scene)
+	void LocalLightSystem::Render(FrameInfo& frame, SceneInfo& scene)
 	{
 		vkCmdBindDescriptorSets(frame.commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			layout, 0, 1, &scene.descriptorSets[0],
 			0, nullptr);
+		int i = 1;
+		for (auto& kv : scene.gameObjects)
+		{
+			auto& obj = kv.second;
+			if (obj.GetModel() == nullptr)
+			{
+				continue;
+			}
 
-		pipeline[0]->Bind(frame.commandBuffer);
+			LocalLightData push{};
+			push.modelMatrix = obj.GetTransform().ModelMat();
+			push.position = glm::vec4(1.0f * i);
+			push.color = glm::vec3(0.1f * i);
+			push.range = 10.0f;
+			i += 1;
+			// NOTE: RenderDoc push constant calls are coming from
+			// the unrenderable lights
+			vkCmdPushConstants(frame.commandBuffer,
+				layout,
+				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+				0,
+				sizeof(LocalLightData),
+				&push);
 
-		vkCmdDraw(frame.commandBuffer, 3, 1, 0, 0);
+			pipeline[0]->Bind(frame.commandBuffer);
+
+			obj.GetModel()->Bind(frame.commandBuffer);
+			obj.GetModel()->Draw(frame.commandBuffer);
+		}
 	}
 }
